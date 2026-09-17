@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم التاجر | إضافة منتج</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* تخصيص الخط العربي الاحترافي */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        
+        /* تخصيص شريط التمرير (Scrollbar) ليكون أنيقاً */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <!-- الشعار -->
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-blue-700">
+                <i class="fa-solid fa-store ml-2"></i>منصتي
+            </h1>
+        </div>
+        
+        <!-- روابط التنقل -->
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="vendor-dashboard.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="vendor-products.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-box-open w-6"></i>
+                <span class="font-medium">المنتجات</span>
+            </a>
+            <a href="vendor-orders.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">الطلبات</span>
+                <span class="mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold">3</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-wallet w-6"></i>
+                <span class="font-medium">الأرباح</span>
+            </a>
+            <a href="vendor-settings.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">إعدادات المتجر</span>
+            </a>
+        </nav>
+
+        <!-- معلومات التاجر أسفل القائمة -->
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img id="vendorAvatar" src="https://ui-avatars.com/api/?name=أحمد&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="vendorName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي (Main Content) -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- الشريط العلوي (Navbar) -->
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <div class="flex items-center">
+                <button class="md:hidden text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <h2 class="hidden md:block text-xl font-bold text-gray-800">إدارة المنتجات</h2>
+            </div>
+            
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <!-- شريط البحث -->
+                <div class="relative hidden sm:block">
+                    <input type="text" placeholder="ابحث عن منتج..." class="bg-gray-100 text-sm rounded-full pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64 transition-all">
+                    <i class="fa-solid fa-search absolute right-4 top-2.5 text-gray-400"></i>
+                </div>
+                <!-- التنبيهات -->
+                <button class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <a href="store.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-eye ml-1"></i> عرض متجري
+                </a>
+            </div>
+        </header>
+
+        <!-- مساحة العمل القابلة للتمرير -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+
+            <!-- حالة التحميل (وضع التعديل فقط) -->
+            <div id="loadingState" class="hidden text-center py-16 text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                <p>جارٍ تحميل بيانات المنتج...</p>
+            </div>
+
+            <!-- حالة الخطأ -->
+            <div id="errorState" class="hidden text-center py-16">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-red-600" id="errorText"></p>
+                <a href="vendor-products.html" class="mt-4 inline-block text-sm text-blue-600 hover:underline">العودة لقائمة المنتجات</a>
+            </div>
+
+            <div id="formWrapper">
+
+            <!-- نموذج إضافة منتج جديد -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50">
+                    <h3 id="formTitle" class="font-bold text-lg text-gray-800"><i class="fa-solid fa-plus-circle text-blue-600 ml-2"></i>إضافة منتج جديد</h3>
+                </div>
+                
+                <form id="productForm" class="p-6 md:p-8">
+                    <div id="formError" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span id="formErrorText"></span>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <!-- القسم الأيمن (البيانات النصية) -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">اسم المنتج <span class="text-red-500">*</span></label>
+                                <input id="productName" type="text" required placeholder="مثال: هاتف أيفون 14 برو ماكس" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">السعر (بالدينار الجزائري) <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <input id="productPrice" type="number" min="0" step="0.01" required placeholder="0.00" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                        <span class="absolute right-4 top-3.5 text-gray-400 font-bold text-sm">دج</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">القسم / التصنيف <span class="text-red-500">*</span></label>
+                                    <select id="categorySelect" onchange="updateVariantOptions()" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none">
+                                        <option disabled selected value="">اختر القسم المناسب...</option>
+                                        <option value="electronics">إلكترونيات وأجهزة ذكية</option>
+                                        <option value="clothing">ملابس وأزياء</option>
+                                        <option value="shoes">أحذية</option>
+                                        <option value="furniture">أدوات منزلية</option>
+                                        <option value="beauty">مستحضرات تجميل وعطور</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">سعر ما قبل الخصم (اختياري)</label>
+                                    <div class="relative">
+                                        <input id="productComparePrice" type="number" min="0" step="0.01" placeholder="0.00" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                        <span class="absolute right-4 top-3.5 text-gray-400 font-bold text-sm">دج</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">الكمية المتوفرة <span class="text-red-500">*</span></label>
+                                    <input id="productQuantity" type="number" min="0" step="1" required placeholder="0" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">رمز المنتج SKU (اختياري)</label>
+                                    <input id="productSku" type="text" placeholder="مثال: WT-0007" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" dir="ltr">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">وصف المنتج (مميزاته وتفاصيله)</label>
+                                <textarea id="productDescription" rows="5" placeholder="اكتب وصفاً جذاباً لمنتجك يقنع الزبون بالشراء..." class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"></textarea>
+                            </div>
+
+                            <!-- خصائص المنتج (تتغير حسب القسم المختار) -->
+                            <div id="variantSection" class="hidden p-5 bg-blue-50 border border-blue-100 rounded-xl">
+                                <p class="text-sm font-bold text-blue-900 mb-3"><i class="fa-solid fa-sliders ml-1"></i> خصائص المنتج المتاحة للزبون</p>
+                                <p class="text-xs text-blue-700 mb-4">حدد القيم المتوفرة فعلاً لهذا المنتج، وستظهر هذه الخيارات للزبون عند الطلب.</p>
+
+                                <div id="variant-electronics" class="variant-group hidden space-y-4">
+                                    <div data-attr-name="اللون">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">اللون المتوفر</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="أسود" class="text-blue-600"> أسود</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="فضي" class="text-blue-600"> فضي</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="ذهبي" class="text-blue-600"> ذهبي</label>
+                                        </div>
+                                    </div>
+                                    <div data-attr-name="سعة التخزين">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">سعة التخزين</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="64 جيجا" class="text-blue-600"> 64 جيجا</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="128 جيجا" class="text-blue-600"> 128 جيجا</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="256 جيجا" class="text-blue-600"> 256 جيجا</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="variant-clothing" class="variant-group hidden space-y-4">
+                                    <div data-attr-name="المقاس">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">المقاسات المتوفرة</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="S" class="text-blue-600"> S</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="M" class="text-blue-600"> M</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="L" class="text-blue-600"> L</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="XL" class="text-blue-600"> XL</label>
+                                        </div>
+                                    </div>
+                                    <div data-attr-name="اللون">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">الألوان المتوفرة</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="أسود" class="text-blue-600"> أسود</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="أبيض" class="text-blue-600"> أبيض</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="أزرق" class="text-blue-600"> أزرق</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="variant-shoes" class="variant-group hidden space-y-4">
+                                    <div data-attr-name="المقاس">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">المقاسات المتوفرة (أوروبي)</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="39" class="text-blue-600"> 39</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="40" class="text-blue-600"> 40</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="41" class="text-blue-600"> 41</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="42" class="text-blue-600"> 42</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="variant-beauty" class="variant-group hidden space-y-4">
+                                    <div data-attr-name="الحجم">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">الأحجام المتوفرة</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="30 مل" class="text-blue-600"> 30 مل</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="50 مل" class="text-blue-600"> 50 مل</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="100 مل" class="text-blue-600"> 100 مل</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="variant-furniture" class="variant-group hidden space-y-4">
+                                    <div data-attr-name="اللون">
+                                        <p class="text-xs font-bold text-gray-600 mb-2">الألوان المتوفرة</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="بني خشبي" class="text-blue-600"> بني خشبي</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="رمادي" class="text-blue-600"> رمادي</label>
+                                            <label class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm"><input type="checkbox" value="أسود" class="text-blue-600"> أسود</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الأيسر (رفع الصور) -->
+                        <div class="lg:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">صور المنتج (حتى 4 صور)</label>
+
+                            <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp" multiple class="hidden">
+
+                            <!-- منطقة رفع الصور -->
+                            <div id="imageDropzone" class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors flex flex-col items-center justify-center p-8 h-40 cursor-pointer group">
+                                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-700 text-center mb-1">اضغط لرفع الصور</p>
+                                <p class="text-xs text-gray-500 text-center">PNG, JPG, WEBP (5 ميجابايت كحد أقصى للصورة)</p>
+                            </div>
+
+                            <!-- معاينة الصور المرفوعة -->
+                            <div id="imagePreviewGrid" class="grid grid-cols-2 gap-3 mt-4"></div>
+                            <p id="imageUploadStatus" class="hidden text-xs text-blue-600 mt-2 text-center"></p>
+                            <p id="imageUploadError" class="hidden text-xs text-red-600 mt-2 text-center"></p>
+
+                            <div class="mt-6 flex items-center justify-between border border-gray-100 p-4 rounded-lg bg-gray-50">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">حالة المنتج</p>
+                                    <p class="text-xs text-gray-500">هل المنتج جاهز للبيع؟</p>
+                                </div>
+                                <!-- زر التبديل (Toggle) -->
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" id="statusToggle" class="sr-only peer">
+                                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <!-- حقول إضافية حسب القسم المختار (تظهر تلقائياً حسب categorySelect أعلاه) -->
+                    <div id="customFieldsSection" class="hidden mt-8 pt-6 border-t border-gray-100">
+                        <p class="text-sm font-bold text-gray-800 mb-1"><i class="fa-solid fa-list-check text-blue-600 ml-1"></i> مواصفات إضافية لهذا القسم (اختياري)</p>
+                        <p class="text-xs text-gray-500 mb-4">تظهر هذه المواصفات للزبون بصفحة المنتج بشكل منظّم</p>
+                        <div id="customFieldsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+                    </div>
+
+                    <!-- متغيرات المنتج (اختياري): توليفات ألوان/مقاسات بأسعار وكميات مستقلة -->
+                    <div class="mt-8 pt-6 border-t border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-layer-group text-blue-600 ml-1"></i> متغيرات المنتج (اختياري)</p>
+                                <p class="text-xs text-gray-500 mt-1">فعّلها لو تبيع هذا المنتج بأكثر من لون/مقاس، كل توليفة بسعرها وكميتها الخاصة</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                                <input type="checkbox" id="variantsToggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+
+                        <div id="variantsBuilder" class="hidden p-5 bg-blue-50 border border-blue-100 rounded-xl space-y-5">
+
+                            <!-- مجموعات الخصائص (اللون، المقاس، ...) -->
+                            <div>
+                                <p class="text-xs font-bold text-blue-900 mb-2">أضف مجموعات الخصائص (مثال: اللون، المقاس)</p>
+                                <div id="variantGroupsList" class="space-y-2 mb-3"></div>
+                                <button type="button" id="addVariantGroupBtn" class="text-sm text-blue-700 font-bold hover:underline">
+                                    <i class="fa-solid fa-plus ml-1"></i> إضافة مجموعة خاصية
+                                </button>
+                            </div>
+
+                            <button type="button" id="generateCombinationsBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-5 py-2.5 rounded-lg transition-colors">
+                                <i class="fa-solid fa-wand-magic-sparkles ml-1"></i> توليد التوليفات تلقائياً
+                            </button>
+
+                            <p id="variantsLimitError" class="hidden text-sm font-bold text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2"></p>
+
+                            <!-- جدول التوليفات المولَّدة، كل صف قابل للتعديل والحذف -->
+                            <div id="variantsTableWrapper" class="hidden bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 text-xs">
+                                        <tr>
+                                            <th class="text-right px-3 py-2 font-bold">التوليفة</th>
+                                            <th class="text-right px-3 py-2 font-bold w-28">السعر (دج)</th>
+                                            <th class="text-right px-3 py-2 font-bold w-24">الكمية</th>
+                                            <th class="text-right px-3 py-2 font-bold w-32">SKU (اختياري)</th>
+                                            <th class="w-10"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="variantsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- أزرار الحفظ -->
+                    <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end space-x-4 space-x-reverse">
+                        <a href="vendor-products.html" class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                            إلغاء
+                        </a>
+                        <button type="submit" id="submitBtn" class="px-8 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md shadow-blue-500/30 font-bold transition-colors flex items-center disabled:opacity-60 disabled:cursor-not-allowed">
+                            <span id="submitText"><i class="fa-solid fa-check ml-2"></i>نشر المنتج</span>
+                            <i id="submitSpinner" class="fa-solid fa-circle-notch fa-spin mr-2 hidden"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            </div>
+            <!-- إغلاق formWrapper -->
+
+        </div>
+    </main>
+
+    <script>
+        function updateVariantOptions() {
+            var selected = document.getElementById('categorySelect').value;
+            var section = document.getElementById('variantSection');
+            document.querySelectorAll('.variant-group').forEach(function(el) {
+                el.classList.add('hidden');
+            });
+            renderCustomFields(selected, null); // تحديث الحقول المخصصة فور تغيير القسم (تُبنى فارغة، تُملأ لاحقاً بوضع التعديل فقط)
+            if (!selected) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+            var target = document.getElementById('variant-' + selected);
+            if (target) target.classList.remove('hidden');
+        }
+
+        // تحديد الاختيارات المسبقة في مجموعة خصائص معيّنة (يُستخدم بوضع التعديل)
+        function checkVariantValues(categoryKey, attributes) {
+            const group = document.getElementById('variant-' + categoryKey);
+            if (!group) return;
+            attributes.forEach(attr => {
+                const checkbox = group.querySelector(`input[type="checkbox"][value="${CSS.escape(attr.attribute_value)}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+        }
+
+        // جمع كل الخصائص المحددة فعلياً من قسم الخصائص الظاهر حالياً فقط
+        function collectAttributes() {
+            const category = document.getElementById('categorySelect').value;
+            const group = document.getElementById('variant-' + category);
+            if (!group) return [];
+
+            const attributes = [];
+            group.querySelectorAll('[data-attr-name]').forEach(container => {
+                const attrName = container.dataset.attrName;
+                container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+                    attributes.push({ name: attrName, value: cb.value });
+                });
+            });
+            return attributes;
+        }
+
+        // ============================================
+        // الحقول المخصصة حسب القسم — يجب أن تطابق تماماً CATEGORY_CUSTOM_FIELDS بملف products.js بالخادم
+        // (نفس أسماء الحقول بالضبط، وإلا يرفضها الخادم برسالة "الحقل غير متاح لهذه الفئة")
+        // ============================================
+        const CATEGORY_CUSTOM_FIELDS = {
+            electronics: ["المعالج", "الذاكرة العشوائية", "مساحة التخزين", "مدة الضمان"],
+            clothing: ["نوع القماش", "تعليمات الغسيل", "بلد الصنع"],
+            shoes: ["المادة", "بلد الصنع"],
+            beauty: ["المكوّنات", "تاريخ الصلاحية", "الحجم/الوزن"],
+            furniture: ["المادة", "الأبعاد", "وزن الشحن"]
+        };
+
+        function escapeAttr(str) {
+            return String(str == null ? "" : str)
+                .replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+                .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function renderCustomFields(category, existingValues) {
+            const section = document.getElementById("customFieldsSection");
+            const grid = document.getElementById("customFieldsGrid");
+            const fields = CATEGORY_CUSTOM_FIELDS[category] || [];
+
+            if (fields.length === 0) {
+                section.classList.add("hidden");
+                grid.innerHTML = "";
+                return;
+            }
+            section.classList.remove("hidden");
+            grid.innerHTML = fields.map(fieldName => `
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1.5">${escapeAttr(fieldName)}</label>
+                    <input type="text" class="custom-field-input w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        data-field-name="${escapeAttr(fieldName)}" value="${escapeAttr(existingValues && existingValues[fieldName] || '')}">
+                </div>
+            `).join("");
+        }
+
+        function collectCustomFields() {
+            const result = {};
+            document.querySelectorAll(".custom-field-input").forEach(input => {
+                const value = input.value.trim();
+                if (value) result[input.dataset.fieldName] = value;
+            });
+            return result;
+        }
+
+        // ============================================
+        // مولّد توليفات المتغيرات (اللون × المقاس × ...)
+        // ============================================
+        const MAX_VARIANTS_PER_PRODUCT = 30; // يطابق نفس الحد بملف products.js بالخادم
+        let currentVariants = []; // [{ combination, price, quantity, sku }]
+
+        function addVariantGroupRow(name = "", valuesText = "") {
+            const row = document.createElement("div");
+            row.className = "flex gap-2 items-center";
+            row.innerHTML = `
+                <input type="text" placeholder="اسم الخاصية (مثال: اللون)" class="variant-group-name w-36 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="${escapeAttr(name)}">
+                <input type="text" placeholder="القيم مفصولة بفاصلة (مثال: أسود, أبيض)" class="variant-group-values flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="${escapeAttr(valuesText)}">
+                <button type="button" class="remove-variant-group-btn text-gray-400 hover:text-red-500 px-2"><i class="fa-regular fa-trash-can"></i></button>
+            `;
+            document.getElementById("variantGroupsList").appendChild(row);
+            row.querySelector(".remove-variant-group-btn").addEventListener("click", () => row.remove());
+        }
+
+        // ضرب ديكارتي لتوليد كل التوليفات الممكنة — دالة نقية بلا أي تأثير جانبي (قابلة للاختبار بمعزل)
+        function generateCombinationsFromGroups(groups) {
+            if (groups.length === 0) return [];
+            const combos = groups.reduce((acc, group) => {
+                const result = [];
+                for (const combo of acc) {
+                    for (const value of group.values) {
+                        result.push([...combo, { name: group.name, value }]);
+                    }
+                }
+                return result;
+            }, [[]]);
+            return combos.map(parts => ({
+                combination: parts.map(p => `${p.name}: ${p.value}`).join("، "),
+                price: null, quantity: 0, sku: ""
+            }));
+        }
+
+        function readVariantGroupsFromForm() {
+            const groups = [];
+            document.querySelectorAll("#variantGroupsList > div").forEach(row => {
+                const name = row.querySelector(".variant-group-name").value.trim();
+                const valuesText = row.querySelector(".variant-group-values").value.trim();
+                const values = valuesText.split(",").map(v => v.trim()).filter(Boolean);
+                if (name && values.length > 0) groups.push({ name, values });
+            });
+            return groups;
+        }
+
+        function renderVariantsTable() {
+            const wrapper = document.getElementById("variantsTableWrapper");
+            const tbody = document.getElementById("variantsTableBody");
+
+            if (currentVariants.length === 0) {
+                wrapper.classList.add("hidden");
+                tbody.innerHTML = "";
+                return;
+            }
+            wrapper.classList.remove("hidden");
+
+            tbody.innerHTML = currentVariants.map((v, i) => `
+                <tr class="border-b border-gray-100 last:border-0">
+                    <td class="px-3 py-2 font-medium text-gray-700">${escapeAttr(v.combination)}</td>
+                    <td class="px-3 py-2"><input type="number" min="0" step="0.01" class="variant-price-input w-full border border-gray-200 rounded px-2 py-1.5 text-sm" data-idx="${i}" value="${v.price ?? ''}"></td>
+                    <td class="px-3 py-2"><input type="number" min="0" step="1" class="variant-qty-input w-full border border-gray-200 rounded px-2 py-1.5 text-sm" data-idx="${i}" value="${v.quantity ?? 0}"></td>
+                    <td class="px-3 py-2"><input type="text" dir="ltr" class="variant-sku-input w-full border border-gray-200 rounded px-2 py-1.5 text-sm" data-idx="${i}" value="${escapeAttr(v.sku || '')}"></td>
+                    <td class="px-3 py-2 text-center">
+                        <button type="button" class="remove-variant-row-btn text-gray-400 hover:text-red-500" data-idx="${i}"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join("");
+
+            tbody.querySelectorAll(".variant-price-input").forEach(input => {
+                input.addEventListener("input", () => { currentVariants[Number(input.dataset.idx)].price = input.value; });
+            });
+            tbody.querySelectorAll(".variant-qty-input").forEach(input => {
+                input.addEventListener("input", () => { currentVariants[Number(input.dataset.idx)].quantity = input.value; });
+            });
+            tbody.querySelectorAll(".variant-sku-input").forEach(input => {
+                input.addEventListener("input", () => { currentVariants[Number(input.dataset.idx)].sku = input.value; });
+            });
+            tbody.querySelectorAll(".remove-variant-row-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    currentVariants.splice(Number(btn.dataset.idx), 1);
+                    renderVariantsTable();
+                });
+            });
+        }
+
+        document.getElementById("addVariantGroupBtn").addEventListener("click", () => addVariantGroupRow());
+
+        document.getElementById("variantsToggle").addEventListener("change", (e) => {
+            document.getElementById("variantsBuilder").classList.toggle("hidden", !e.target.checked);
+            // الكمية بمستوى المنتج تصير غير مطلوبة لأن الكمية تُدار لكل توليفة على حدة عند تفعيل المتغيرات
+            document.getElementById("productQuantity").required = !e.target.checked;
+            if (e.target.checked && document.getElementById("variantGroupsList").children.length === 0) {
+                addVariantGroupRow();
+            }
+        });
+
+        document.getElementById("generateCombinationsBtn").addEventListener("click", () => {
+            const groups = readVariantGroupsFromForm();
+            const errorEl = document.getElementById("variantsLimitError");
+            errorEl.classList.add("hidden");
+
+            if (groups.length === 0) {
+                errorEl.textContent = "أضف مجموعة خاصية واحدة على الأقل بقيمها";
+                errorEl.classList.remove("hidden");
+                return;
+            }
+
+            const newCombinations = generateCombinationsFromGroups(groups);
+            if (newCombinations.length > MAX_VARIANTS_PER_PRODUCT) {
+                errorEl.textContent = `عدد التوليفات (${newCombinations.length}) يتجاوز الحد الأقصى المسموح (${MAX_VARIANTS_PER_PRODUCT}) — قلّل عدد القيم`;
+                errorEl.classList.remove("hidden");
+                return;
+            }
+
+            // الحفاظ على القيم المُدخلة سابقاً لأي توليفة لا تزال موجودة بنفس النص (بدل تصفيرها عند إعادة التوليد)
+            const existingByCombination = new Map(currentVariants.map(v => [v.combination, v]));
+            currentVariants = newCombinations.map(v => existingByCombination.get(v.combination) || v);
+
+            renderVariantsTable();
+        });
+
+        function validateVariantsBeforeSubmit() {
+            if (!document.getElementById("variantsToggle").checked) return null;
+            if (currentVariants.length === 0) return "فعّلت المتغيرات لكن لم تولّد أي توليفة بعد — اضغط \"توليد التوليفات تلقائياً\"";
+            for (const v of currentVariants) {
+                if (!v.price || Number(v.price) <= 0) return `يرجى إدخال سعر صالح للتوليفة "${v.combination}"`;
+            }
+            return null;
+        }
+
+        // بوضع الإنشاء: undefined لو المتغيرات غير مفعّلة (منتج بسيط عادي، بدون أي تغيير بسلوك الإرسال القديم)
+        // بوضع التعديل: [] صراحة لو عُطِّلت المتغيرات، حتى يحذفها الخادم فعلياً لو كانت محفوظة من قبل
+        function collectVariants() {
+            const toggleOn = document.getElementById("variantsToggle").checked;
+            if (!toggleOn) return isEditMode ? [] : undefined;
+            return currentVariants.map(v => ({
+                combination: v.combination,
+                price: Number(v.price),
+                quantity: Number(v.quantity || 0),
+                sku: v.sku ? String(v.sku).trim() : null
+            }));
+        }
+    </script>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/vendor-guard.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get("id");
+        const isEditMode = !!productId;
+
+        let uploadedImages = []; // { id?: (فقط بوضع التعديل), url }
+
+        if (isEditMode) {
+            document.getElementById("formTitle").innerHTML = '<i class="fa-solid fa-pen ml-2"></i>تعديل المنتج';
+            document.getElementById("submitText").innerHTML = '<i class="fa-solid fa-check ml-2"></i>حفظ التعديلات';
+        }
+
+        function showFormError(message) {
+            document.getElementById("formErrorText").textContent = message;
+            document.getElementById("formError").classList.remove("hidden");
+        }
+        function hideFormError() {
+            document.getElementById("formError").classList.add("hidden");
+        }
+
+        function renderImagePreviews() {
+            const grid = document.getElementById("imagePreviewGrid");
+            grid.innerHTML = uploadedImages.map((img, index) => `
+                <div class="relative group">
+                    <img src="${img.url}" class="w-full h-20 object-cover rounded-lg border border-gray-200">
+                    <button type="button" onclick="removeImage(${index})" class="absolute -top-2 -left-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-xs shadow transition-colors">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `).join("");
+
+            document.getElementById("imageDropzone").style.display = uploadedImages.length >= 4 ? "none" : "flex";
+        }
+
+        async function removeImage(index) {
+            const img = uploadedImages[index];
+            // بوضع التعديل، للصور المحفوظة أصلاً بقاعدة البيانات، نحذفها فعلياً من الخادم أيضاً
+            if (isEditMode && img.id) {
+                try {
+                    await apiRequest(`/api/products/${productId}/images/${img.id}`, { method: "DELETE" });
+                } catch (err) {
+                    alert("تعذّر حذف الصورة: " + err.message);
+                    return;
+                }
+            }
+            uploadedImages.splice(index, 1);
+            renderImagePreviews();
+        }
+
+        document.getElementById("imageDropzone").addEventListener("click", () => {
+            document.getElementById("imageFileInput").click();
+        });
+
+        document.getElementById("imageFileInput").addEventListener("change", async (e) => {
+            const files = [...e.target.files];
+            const statusEl = document.getElementById("imageUploadStatus");
+            const errorEl = document.getElementById("imageUploadError");
+            errorEl.classList.add("hidden");
+
+            const remainingSlots = 4 - uploadedImages.length;
+            if (files.length > remainingSlots) {
+                errorEl.textContent = `يمكن إضافة ${remainingSlots} صورة إضافية فقط (الحد الأقصى 4 صور لكل منتج)`;
+                errorEl.classList.remove("hidden");
+                files.length = remainingSlots;
+            }
+
+            for (const file of files) {
+                statusEl.textContent = `جارٍ رفع ${file.name}...`;
+                statusEl.classList.remove("hidden");
+                try {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    const result = await apiRequest("/api/vendors/upload-image", { method: "POST", body: formData });
+
+                    if (isEditMode) {
+                        // بوضع التعديل: المنتج موجود أصلاً بقاعدة البيانات، فنربط الصورة به فوراً
+                        const attachResult = await apiRequest(`/api/products/${productId}/images`, {
+                            method: "POST",
+                            body: JSON.stringify({ image_url: result.url })
+                        });
+                        uploadedImages.push({ id: attachResult.id, url: result.url });
+                    } else {
+                        // بوضع الإنشاء: المنتج غير موجود بعد، فنحتفظ بالرابط محلياً ونرسله عند الحفظ النهائي
+                        uploadedImages.push({ url: result.url });
+                    }
+                    renderImagePreviews();
+                } catch (err) {
+                    errorEl.textContent = `فشل رفع ${file.name}: ${err.message}`;
+                    errorEl.classList.remove("hidden");
+                }
+            }
+            statusEl.classList.add("hidden");
+            e.target.value = ""; // السماح برفع نفس الملف مرة أخرى لاحقاً لو احتاج المستخدم
+        });
+
+        async function loadProductForEdit() {
+            document.getElementById("formWrapper").classList.add("hidden");
+            document.getElementById("loadingState").classList.remove("hidden");
+
+            try {
+                const product = await apiRequest(`/api/products/${productId}`);
+
+                document.getElementById("productName").value = product.name;
+                document.getElementById("productPrice").value = product.price;
+                document.getElementById("productComparePrice").value = product.compare_at_price || "";
+                document.getElementById("productQuantity").value = product.quantity;
+                document.getElementById("productSku").value = product.sku || "";
+                document.getElementById("productDescription").value = product.description || "";
+                document.getElementById("categorySelect").value = product.category;
+                document.getElementById("statusToggle").checked = product.status === "published";
+
+                updateVariantOptions();
+                checkVariantValues(product.category, product.attributes);
+                renderCustomFields(product.category, product.custom_fields);
+
+                // تعبئة المتغيرات المحفوظة سابقاً (لو وُجدت) مباشرة بجدول التعديل، بدون حاجة لإعادة توليدها
+                if (product.variants && product.variants.length > 0) {
+                    document.getElementById("variantsToggle").checked = true;
+                    document.getElementById("variantsBuilder").classList.remove("hidden");
+                    document.getElementById("productQuantity").required = false;
+                    currentVariants = product.variants.map(v => ({
+                        combination: v.combination, price: v.price, quantity: v.quantity, sku: v.sku || ""
+                    }));
+                    renderVariantsTable();
+                }
+
+                uploadedImages = product.images.map(img => ({ id: img.id, url: img.image_url }));
+                renderImagePreviews();
+
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("formWrapper").classList.remove("hidden");
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        document.getElementById("productForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            hideFormError();
+
+            const name = document.getElementById("productName").value.trim();
+            const category = document.getElementById("categorySelect").value;
+            const price = document.getElementById("productPrice").value;
+            const quantity = document.getElementById("productQuantity").value;
+
+            const variantsEnabled = document.getElementById("variantsToggle").checked;
+            if (!name || !category || !price || (!variantsEnabled && quantity === "")) {
+                showFormError("يرجى تعبئة كل الحقول المطلوبة (اسم المنتج، القسم، السعر، الكمية)");
+                return;
+            }
+
+            const variantsValidationError = validateVariantsBeforeSubmit();
+            if (variantsValidationError) {
+                showFormError(variantsValidationError);
+                return;
+            }
+
+            const payload = {
+                name,
+                category,
+                price: Number(price),
+                quantity: Number(quantity),
+                compare_at_price: document.getElementById("productComparePrice").value ? Number(document.getElementById("productComparePrice").value) : null,
+                sku: document.getElementById("productSku").value.trim() || null,
+                description: document.getElementById("productDescription").value.trim() || null,
+                status: document.getElementById("statusToggle").checked ? "published" : "draft",
+                attributes: collectAttributes(),
+                custom_fields: collectCustomFields()
+            };
+            const variantsPayload = collectVariants();
+            if (variantsPayload !== undefined) payload.variants = variantsPayload;
+
+            const submitBtn = document.getElementById("submitBtn");
+            const submitText = document.getElementById("submitText");
+            const submitSpinner = document.getElementById("submitSpinner");
+            submitBtn.disabled = true;
+            submitSpinner.classList.remove("hidden");
+
+            try {
+                if (isEditMode) {
+                    await apiRequest(`/api/products/${productId}`, { method: "PUT", body: JSON.stringify(payload) });
+                } else {
+                    // بوضع الإنشاء فقط: نرسل الصور الجديدة كاملة ضمن نفس طلب الإنشاء
+                    payload.images = uploadedImages.map(img => img.url);
+                    await apiRequest("/api/products", { method: "POST", body: JSON.stringify(payload) });
+                }
+                window.location.href = "vendor-products.html";
+            } catch (err) {
+                showFormError(err.message);
+                submitBtn.disabled = false;
+                submitSpinner.classList.add("hidden");
+            }
+        });
+
+        if (isEditMode) {
+            loadProductForEdit();
+        }
+    </script>
+</body>
+</html>

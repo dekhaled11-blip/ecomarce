@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشرف | كل التجار المسجلين</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* تخصيص الخط العربي الاحترافي */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+
+        /* تخصيص شريط التمرير (Scrollbar) ليكون أنيقاً */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <!-- الشعار -->
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-blue-700">
+                <i class="fa-solid fa-shield-halved ml-2"></i>لوحة المشرف
+            </h1>
+        </div>
+
+        <!-- روابط التنقل -->
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="admin-vendors.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-store w-6"></i>
+                <span class="font-medium">التجار</span>
+            </a>
+            <a href="admin-activation-queue.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-credit-card w-6"></i>
+                <span class="font-medium">الاشتراكات والمدفوعات</span>
+                <span class="mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold">4</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">كل الطلبات</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">إعدادات المنصة</span>
+            </a>
+        </nav>
+
+        <!-- معلومات المشرف أسفل القائمة -->
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="adminName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي (Main Content) -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- الشريط العلوي (Navbar) -->
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <div class="flex items-center">
+                <button class="md:hidden text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <h2 class="hidden md:block text-xl font-bold text-gray-800">إدارة التجار</h2>
+            </div>
+
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- مساحة العمل القابلة للتمرير -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+
+            <!-- إحصائيات سريعة -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">إجمالي التجار</p>
+                        <h3 id="statTotal" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">حسابات نشطة</p>
+                        <h3 id="statActive" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">في فترة تجريبية</p>
+                        <h3 id="statTrial" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">حسابات معلّقة</p>
+                        <h3 id="statSuspended" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول التجار -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+                <!-- شريط البحث والفلاتر -->
+                <div class="border-b border-gray-100 px-6 py-4 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between bg-gray-50">
+                    <h3 class="font-bold text-lg text-gray-800 whitespace-nowrap"><i class="fa-solid fa-list text-blue-600 ml-2"></i>قائمة التجار</h3>
+
+                    <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <div class="relative">
+                            <input id="searchInput" type="text" placeholder="ابحث بالاسم أو البريد الإلكتروني..." class="bg-white border border-gray-200 rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-72 transition-all">
+                            <i class="fa-solid fa-search absolute right-4 top-3 text-gray-400 text-sm"></i>
+                        </div>
+                        <select id="statusFilter" class="bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                            <option value="">كل الحالات</option>
+                            <option value="active">نشط</option>
+                            <option value="trial">تجربة مجانية</option>
+                            <option value="pending_payment">بانتظار الدفع</option>
+                            <option value="suspended">معلّق</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- حالة التحميل -->
+                <div id="loadingState" class="text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                    <p>جارٍ تحميل التجار...</p>
+                </div>
+
+                <!-- حالة الخطأ -->
+                <div id="errorState" class="hidden text-center py-16">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                    <p class="text-red-600" id="errorText"></p>
+                    <button onclick="loadVendors()" class="mt-4 text-sm text-blue-600 hover:underline">إعادة المحاولة</button>
+                </div>
+
+                <!-- حالة عدم وجود نتائج -->
+                <div id="emptyState" class="hidden text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-store-slash text-4xl mb-3"></i>
+                    <p>لا يوجد تجار مطابقون</p>
+                </div>
+
+                <!-- الجدول -->
+                <div id="tableWrapper" class="hidden overflow-x-auto">
+                    <table class="w-full text-sm text-right">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">التاجر</th>
+                                <th class="px-6 py-4 font-medium">تاريخ التسجيل</th>
+                                <th class="px-6 py-4 font-medium">المنتجات</th>
+                                <th class="px-6 py-4 font-medium">الحالة</th>
+                                <th class="px-6 py-4 font-medium">تنتهي التجربة / الاشتراك</th>
+                                <th class="px-6 py-4 font-medium">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendorsTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+
+                <!-- ترقيم الصفحات -->
+                <div id="paginationWrapper" class="hidden border-t border-gray-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+                    <p id="resultsCount" class="text-sm text-gray-500"></p>
+                    <div id="paginationButtons" class="flex items-center gap-2"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/admin-guard.js"></script>
+    <script>
+        const STATUS_LABELS = {
+            trial: "تجربة مجانية", active: "نشط", pending_payment: "بانتظار الدفع", suspended: "معلّق"
+        };
+        const STATUS_COLORS = {
+            trial: "bg-yellow-100 text-yellow-700", active: "bg-green-100 text-green-700",
+            pending_payment: "bg-blue-100 text-blue-700", suspended: "bg-red-100 text-red-700"
+        };
+        const AVATAR_COLORS = ["1d4ed8", "e11d48", "047857", "a21caf", "b45309"];
+
+        function formatDate(isoDate) {
+            return new Date(isoDate).toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
+        }
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str || "";
+            return div.innerHTML;
+        }
+        function daysRemaining(isoDate) {
+            const diffMs = new Date(isoDate) - new Date();
+            return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        }
+
+        let searchDebounceTimer = null;
+
+        async function loadVendors(page = 1) {
+            document.getElementById("loadingState").classList.remove("hidden");
+            document.getElementById("errorState").classList.add("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("tableWrapper").classList.add("hidden");
+            document.getElementById("paginationWrapper").classList.add("hidden");
+
+            const search = document.getElementById("searchInput").value.trim();
+            const status = document.getElementById("statusFilter").value;
+
+            let path = `/api/admin/vendors?page=${page}&limit=10`;
+            if (status) path += `&status=${status}`;
+            if (search) path += `&search=${encodeURIComponent(search)}`;
+
+            try {
+                const data = await apiRequest(path);
+                document.getElementById("loadingState").classList.add("hidden");
+
+                renderStats(data.status_counts);
+
+                if (data.vendors.length === 0) {
+                    document.getElementById("emptyState").classList.remove("hidden");
+                    return;
+                }
+
+                renderTable(data.vendors);
+                renderPagination(data.pagination);
+                document.getElementById("tableWrapper").classList.remove("hidden");
+                document.getElementById("paginationWrapper").classList.remove("hidden");
+
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        function renderStats(counts) {
+            const total = counts.trial + counts.active + counts.pending_payment + counts.suspended;
+            document.getElementById("statTotal").textContent = total;
+            document.getElementById("statActive").textContent = counts.active;
+            document.getElementById("statTrial").textContent = counts.trial;
+            document.getElementById("statSuspended").textContent = counts.suspended;
+        }
+
+        function renderTable(vendors) {
+            const tbody = document.getElementById("vendorsTableBody");
+            tbody.innerHTML = vendors.map((v, i) => {
+                const avatarColor = AVATAR_COLORS[v.id % AVATAR_COLORS.length];
+                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(v.store_name)}&background=${avatarColor}&color=fff`;
+
+                let expiryText = "—";
+                if (v.status === "trial" && v.trial_ends_at) {
+                    const days = daysRemaining(v.trial_ends_at);
+                    expiryText = days > 0 ? `تنتهي بعد ${days} يوم` : "انتهت التجربة";
+                } else if (v.status === "active" && v.subscription_ends_at) {
+                    expiryText = formatDate(v.subscription_ends_at);
+                } else if (v.status === "pending_payment") {
+                    expiryText = "بانتظار مراجعة الدفع";
+                }
+
+                let actionsHtml = `<a href="store.html?id=${v.id}" class="text-blue-600 hover:bg-blue-50 w-8 h-8 rounded-lg transition-colors inline-flex items-center justify-center" title="عرض المتجر"><i class="fa-solid fa-eye"></i></a>`;
+
+                if (v.status === "pending_payment") {
+                    actionsHtml += `<a href="admin-vendor-detail.html?id=${v.id}" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors inline-flex items-center">
+                        <i class="fa-solid fa-check ml-1"></i> تفعيل الحساب</a>`;
+                } else if (v.status === "suspended") {
+                    actionsHtml += `<button onclick="reactivateVendor(${v.id})" class="text-green-600 hover:bg-green-50 w-8 h-8 rounded-lg transition-colors" title="إعادة التفعيل"><i class="fa-solid fa-rotate-right"></i></button>`;
+                } else {
+                    actionsHtml += `<button onclick="suspendVendor(${v.id}, '${escapeHtml(v.store_name).replace(/'/g, "\\'")}')" class="text-red-500 hover:bg-red-50 w-8 h-8 rounded-lg transition-colors" title="تعليق الحساب"><i class="fa-solid fa-ban"></i></button>`;
+                }
+
+                return `
+                    <tr class="hover:bg-gray-50 transition-colors ${v.status === 'pending_payment' ? 'bg-blue-50/30' : ''}">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <img src="${avatarUrl}" class="w-9 h-9 rounded-full ml-3" alt="">
+                                <div>
+                                    <p class="font-bold text-gray-800">${escapeHtml(v.store_name)}</p>
+                                    <p class="text-xs text-gray-400" dir="ltr">${escapeHtml(v.email)}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">${formatDate(v.created_at)}</td>
+                        <td class="px-6 py-4 text-gray-600">${v.product_count}</td>
+                        <td class="px-6 py-4">
+                            <span class="${STATUS_COLORS[v.status]} text-xs font-bold px-3 py-1 rounded-full">${STATUS_LABELS[v.status]}</span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">${expiryText}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">${actionsHtml}</div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function renderPagination(pagination) {
+            document.getElementById("resultsCount").textContent =
+                `عرض ${(pagination.page - 1) * pagination.limit + 1} إلى ${Math.min(pagination.page * pagination.limit, pagination.total)} من أصل ${pagination.total} تاجر`;
+
+            const container = document.getElementById("paginationButtons");
+            if (pagination.total_pages <= 1) { container.innerHTML = ""; return; }
+
+            let html = "";
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                html += `<button onclick="loadVendors(${i})" class="w-9 h-9 rounded-lg ${i === pagination.page ? 'bg-blue-600 text-white font-bold' : 'border border-gray-200 text-gray-600 hover:bg-gray-100'} transition-colors">${i}</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        async function suspendVendor(id, name) {
+            if (!confirm(`هل أنت متأكد من تعليق حساب "${name}"؟ لن يتمكن من الوصول لمتجره حتى تُعيد تفعيله.`)) return;
+            try {
+                await apiRequest(`/api/admin/vendors/${id}/suspend`, { method: "PUT" });
+                loadVendors();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function reactivateVendor(id) {
+            if (!confirm("هل تريد إعادة تفعيل حساب هذا التاجر؟")) return;
+            try {
+                await apiRequest(`/api/admin/vendors/${id}/activate`, { method: "PUT" });
+                loadVendors();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        document.getElementById("searchInput").addEventListener("input", () => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => loadVendors(1), 400);
+        });
+        document.getElementById("statusFilter").addEventListener("change", () => loadVendors(1));
+
+        loadVendors();
+    </script>
+</body>
+</html>

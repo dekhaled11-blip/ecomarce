@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر أحمد للإلكترونيات | منصتك</title>
+    <!-- استدعاء Tailwind CSS لسرعة التصميم -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* تخصيص الخط ليناسب المواقع العربية الاحترافية */
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- الشريط العلوي -->
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
+            <a href="index.html" class="text-2xl font-bold text-blue-700"><i class="fa-solid fa-store ml-2"></i>منصتي</a>
+            <a href="cart.html" class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+                <i class="fa-solid fa-cart-shopping text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- حالة التحميل -->
+    <div id="loadingState" class="text-center py-24 text-gray-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+        <p>جارٍ تحميل المتجر...</p>
+    </div>
+
+    <!-- حالة الخطأ / متجر غير موجود -->
+    <div id="errorState" class="hidden text-center py-24 max-w-md mx-auto px-4">
+        <i class="fa-solid fa-store-slash text-4xl text-gray-300 mb-4"></i>
+        <p class="text-gray-600 font-medium mb-2" id="errorText"></p>
+        <a href="index.html" class="text-blue-600 hover:underline text-sm">العودة للصفحة الرئيسية</a>
+    </div>
+
+    <div id="storeContent" class="hidden">
+
+        <!-- غلاف المتجر -->
+        <div id="coverContainer" class="w-full h-64 bg-gradient-to-r from-blue-700 to-indigo-900 bg-cover bg-center"></div>
+
+        <!-- معلومات التاجر -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10">
+            <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-4 sm:space-y-0 sm:space-x-6 sm:space-x-reverse">
+                <img id="storeLogoImg" src="" alt="شعار المتجر" class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover bg-white">
+
+                <div class="text-center sm:text-right pb-2">
+                    <h1 id="storeName" class="text-3xl font-bold text-gray-900"></h1>
+                    <p id="storeDescription" class="text-gray-500 mt-1"></p>
+                </div>
+
+                <div class="mr-auto pb-2">
+                    <a id="contactVendorBtn" href="#" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg shadow transition duration-200 inline-block">
+                        <i class="fa-solid fa-phone ml-1"></i> تواصل مع البائع
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- شبكة المنتجات -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-20">
+            <h2 class="text-xl font-bold mb-6 border-b pb-2">منتجات المتجر</h2>
+
+            <div id="productsLoading" class="text-center py-10 text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+                <p class="text-sm">جارٍ تحميل المنتجات...</p>
+            </div>
+            <div id="productsEmpty" class="hidden text-center py-16 text-gray-400">
+                <i class="fa-regular fa-box-open text-4xl mb-3"></i>
+                <p>لا توجد منتجات بهذا المتجر حالياً</p>
+            </div>
+            <div id="productsGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            <div id="pagination" class="hidden flex items-center justify-center gap-2 mt-8"></div>
+        </div>
+
+    </div>
+
+    <!-- تذييل الصفحة (كان مفقوداً - أُضيف للربط مع باقي الصفحات) -->
+    <footer class="bg-gray-900 text-gray-300 py-10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
+            <p>© 2026 منصتي. جميع الحقوق محفوظة.</p>
+            <div class="flex items-center gap-6">
+                <a href="index.html" class="hover:text-white transition-colors">الرئيسية</a>
+                <a href="about.html" class="hover:text-white transition-colors">من نحن</a>
+                <a href="contact.html" class="hover:text-white transition-colors">اتصل بنا</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/api-config.js"></script>
+    <script>
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorId = urlParams.get("id") || urlParams.get("store");
+
+        let currentPage = 1;
+
+        async function loadStore() {
+            if (!vendorId) {
+                showError("لم يتم تحديد المتجر المطلوب.");
+                return;
+            }
+
+            try {
+                const vendor = await apiRequest(`/api/public/vendors/${encodeURIComponent(vendorId)}`);
+                renderVendor(vendor);
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("storeContent").classList.remove("hidden");
+                loadProducts(1);
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById("loadingState").classList.add("hidden");
+            document.getElementById("errorText").textContent = message;
+            document.getElementById("errorState").classList.remove("hidden");
+        }
+
+        function renderVendor(vendor) {
+            document.title = `متجر ${vendor.store_name} | منصتي`;
+            document.getElementById("storeName").textContent = vendor.store_name;
+            document.getElementById("storeDescription").textContent = vendor.description || "لا توجد نبذة عن هذا المتجر بعد.";
+
+            const logo = vendor.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(vendor.store_name)}&background=1d4ed8&color=fff&size=150`;
+            document.getElementById("storeLogoImg").src = logo;
+
+            const coverContainer = document.getElementById("coverContainer");
+            if (vendor.cover_url) {
+                coverContainer.style.backgroundImage = `url('${vendor.cover_url}')`;
+                coverContainer.classList.remove("bg-gradient-to-r", "from-blue-700", "to-indigo-900");
+            }
+
+            const contactBtn = document.getElementById("contactVendorBtn");
+            if (vendor.phone) {
+                contactBtn.href = `tel:${vendor.phone}`;
+            } else {
+                contactBtn.href = "contact.html";
+            }
+        }
+
+        async function loadProducts(page) {
+            currentPage = page;
+            const loading = document.getElementById("productsLoading");
+            const empty = document.getElementById("productsEmpty");
+            const grid = document.getElementById("productsGrid");
+            const pagination = document.getElementById("pagination");
+
+            loading.classList.remove("hidden");
+            empty.classList.add("hidden");
+            grid.classList.add("hidden");
+            pagination.classList.add("hidden");
+
+            try {
+                const data = await apiRequest(`/api/public/vendors/${encodeURIComponent(vendorId)}/products?page=${page}&limit=12`);
+                loading.classList.add("hidden");
+
+                if (data.products.length === 0) {
+                    empty.classList.remove("hidden");
+                    return;
+                }
+
+                grid.innerHTML = data.products.map(p => {
+                    const hasDiscount = p.compare_at_price && p.compare_at_price > p.price;
+                    const thumbnail = p.thumbnail
+                        ? `<img src="${p.thumbnail}" alt="${escapeHtml(p.name)}" class="absolute inset-0 w-full h-full object-cover">`
+                        : `<div class="absolute inset-0 bg-gray-300 flex items-center justify-center text-gray-500 text-sm">لا توجد صورة</div>`;
+
+                    return `
+                        <div class="bg-white rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer border border-gray-100">
+                            <a href="product.html?id=${p.id}" class="h-48 bg-gray-200 relative block">${thumbnail}</a>
+                            <div class="p-4">
+                                <a href="product.html?id=${p.id}"><h3 class="font-bold text-lg text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">${escapeHtml(p.name)}</h3></a>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <div>
+                                        <span class="text-xl font-bold text-blue-600">${formatDZD(p.price)}</span>
+                                        ${hasDiscount ? `<span class="text-xs text-gray-400 line-through mr-1">${formatDZD(p.compare_at_price)}</span>` : ""}
+                                    </div>
+                                    <a href="product.html?id=${p.id}" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded-full transition-colors inline-flex" title="عرض المنتج">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+                grid.classList.remove("hidden");
+
+                if (data.pagination.total_pages > 1) {
+                    let html = "";
+                    for (let i = 1; i <= data.pagination.total_pages; i++) {
+                        html += `<button onclick="loadProducts(${i})" class="w-9 h-9 rounded-lg ${i === page ? 'bg-blue-600 text-white font-bold' : 'border border-gray-200 text-gray-600 hover:bg-gray-100'} transition-colors">${i}</button>`;
+                    }
+                    pagination.innerHTML = html;
+                    pagination.classList.remove("hidden");
+                }
+
+            } catch (err) {
+                loading.classList.add("hidden");
+                empty.classList.remove("hidden");
+                document.querySelector("#productsEmpty p").textContent = err.message;
+            }
+        }
+
+        loadStore();
+    </script>
+
+</body>
+</html>

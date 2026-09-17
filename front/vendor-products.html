@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم التاجر | منتجاتي</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-blue-700">
+                <i class="fa-solid fa-store ml-2"></i>منصتي
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="vendor-dashboard.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="vendor-products.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-box-open w-6"></i>
+                <span class="font-medium">المنتجات</span>
+            </a>
+            <a href="vendor-orders.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">الطلبات</span>
+                <span class="mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold">3</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-wallet w-6"></i>
+                <span class="font-medium">الأرباح</span>
+            </a>
+            <a href="vendor-settings.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">إعدادات المتجر</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img id="vendorAvatar" src="https://ui-avatars.com/api/?name=أحمد&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="vendorName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- الشريط العلوي -->
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <div class="flex items-center">
+                <button class="md:hidden text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <h2 class="hidden md:block text-xl font-bold text-gray-800">منتجاتي</h2>
+            </div>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <a href="store.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                    <i class="fa-solid fa-eye ml-1"></i> عرض متجري
+                </a>
+            </div>
+        </header>
+
+        <!-- مساحة العمل القابلة للتمرير -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+
+            <!-- إحصائيات سريعة -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">إجمالي المنتجات</p>
+                        <h3 id="statTotalProducts" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">منتجات منشورة</p>
+                        <h3 id="statPublished" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">كمية منخفضة</p>
+                        <h3 id="statLowStock" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">نفدت الكمية</p>
+                        <h3 id="statOutOfStock" class="text-3xl font-bold text-gray-800">—</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول المنتجات -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+                <!-- شريط البحث والفلاتر وزر الإضافة -->
+                <div class="border-b border-gray-100 px-6 py-4 flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between bg-gray-50">
+                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        <div class="relative">
+                            <input id="searchInput" type="text" placeholder="ابحث عن منتج..." class="bg-white border border-gray-200 rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-64 transition-all">
+                            <i class="fa-solid fa-search absolute right-4 top-3 text-gray-400 text-sm"></i>
+                        </div>
+                        <select id="statusFilter" class="bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                            <option value="">كل الحالات</option>
+                            <option value="published">منشور</option>
+                            <option value="draft">مسودة</option>
+                        </select>
+                    </div>
+                    <a href="vendor-add-product.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center whitespace-nowrap">
+                        <i class="fa-solid fa-plus ml-2"></i> إضافة منتج جديد
+                    </a>
+                </div>
+
+                <!-- شريط إجراءات جماعية (يظهر فقط عند تحديد عناصر) -->
+                <div id="bulkActionsBar" class="hidden border-b border-gray-100 px-6 py-3 bg-blue-50 flex items-center justify-between text-sm">
+                    <span class="text-blue-800 font-medium"><i class="fa-solid fa-square-check ml-1"></i> تم تحديد <span id="selectedCount">0</span> منتج</span>
+                    <button id="bulkDeleteBtn" class="text-red-600 hover:underline font-medium">حذف المحدد</button>
+                </div>
+
+                <!-- حالة التحميل -->
+                <div id="loadingState" class="text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                    <p>جارٍ تحميل المنتجات...</p>
+                </div>
+
+                <!-- حالة الخطأ -->
+                <div id="errorState" class="hidden text-center py-16">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                    <p class="text-red-600" id="errorText"></p>
+                    <button onclick="loadProducts()" class="mt-4 text-sm text-blue-600 hover:underline">إعادة المحاولة</button>
+                </div>
+
+                <!-- حالة عدم وجود نتائج -->
+                <div id="emptyState" class="hidden text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+                    <p>لا توجد منتجات مطابقة</p>
+                </div>
+
+                <!-- الجدول -->
+                <div id="tableWrapper" class="hidden overflow-x-auto">
+                    <table class="w-full text-sm text-right">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 border-b border-gray-100">
+                                <th class="px-6 py-4"><input id="selectAllCheckbox" type="checkbox" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"></th>
+                                <th class="px-6 py-4 font-medium">المنتج</th>
+                                <th class="px-6 py-4 font-medium">التصنيف</th>
+                                <th class="px-6 py-4 font-medium">السعر</th>
+                                <th class="px-6 py-4 font-medium">الكمية</th>
+                                <th class="px-6 py-4 font-medium">الحالة</th>
+                                <th class="px-6 py-4 font-medium">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+
+                <!-- ترقيم الصفحات -->
+                <div id="paginationWrapper" class="hidden border-t border-gray-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+                    <p id="resultsCount" class="text-sm text-gray-500"></p>
+                    <div id="paginationButtons" class="flex items-center gap-2"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/vendor-guard.js"></script>
+    <script>
+        const CATEGORY_LABELS = {
+            electronics: "إلكترونيات", clothing: "ملابس", shoes: "أحذية",
+            beauty: "عطور ومستحضرات", furniture: "أثاث ومنزل"
+        };
+        const STATUS_BADGES = {
+            published: '<span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">منشور</span>',
+            draft: '<span class="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded-full">مسودة</span>'
+        };
+
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+
+        let currentPage = 1;
+        let searchDebounceTimer = null;
+
+        async function loadStats() {
+            try {
+                const stats = await apiRequest("/api/vendor/dashboard-stats");
+                document.getElementById("statTotalProducts").textContent = stats.products.total;
+                document.getElementById("statPublished").textContent = stats.products.published;
+                document.getElementById("statLowStock").textContent = stats.products.low_stock;
+                document.getElementById("statOutOfStock").textContent = stats.products.out_of_stock;
+            } catch (err) {
+                // فشل تحميل الإحصائيات ليس خطأ حرجاً — نترك الشرطات كما هي بدون كسر الصفحة
+                console.error(err);
+            }
+        }
+
+        async function loadProducts(page = 1) {
+            currentPage = page;
+            document.getElementById("loadingState").classList.remove("hidden");
+            document.getElementById("errorState").classList.add("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("tableWrapper").classList.add("hidden");
+            document.getElementById("paginationWrapper").classList.add("hidden");
+            document.getElementById("bulkActionsBar").classList.add("hidden");
+
+            const search = document.getElementById("searchInput").value.trim();
+            const status = document.getElementById("statusFilter").value;
+
+            let path = `/api/products?page=${page}&limit=10`;
+            if (status) path += `&status=${status}`;
+
+            try {
+                const data = await apiRequest(path);
+                document.getElementById("loadingState").classList.add("hidden");
+
+                // فلترة البحث النصي محلياً على النتائج المعروضة (الباك اند لا يدعم بحث نصي بمسار المنتجات حالياً)
+                const products = search
+                    ? data.products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+                    : data.products;
+
+                if (products.length === 0) {
+                    document.getElementById("emptyState").classList.remove("hidden");
+                    return;
+                }
+
+                renderTable(products);
+                renderPagination(data.pagination);
+                document.getElementById("tableWrapper").classList.remove("hidden");
+                document.getElementById("paginationWrapper").classList.remove("hidden");
+
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        function renderTable(products) {
+            const tbody = document.getElementById("productsTableBody");
+            tbody.innerHTML = products.map(p => {
+                const isOutOfStock = p.quantity === 0;
+                const rowClass = isOutOfStock ? "hover:bg-gray-50 transition-colors opacity-70" : "hover:bg-gray-50 transition-colors";
+                const thumbnail = p.thumbnail
+                    ? `<img src="${p.thumbnail}" class="w-12 h-12 rounded-lg ml-3 object-cover flex-shrink-0" alt="">`
+                    : `<div class="w-12 h-12 bg-gray-100 rounded-lg ml-3 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">صورة</div>`;
+                const priceHtml = p.compare_at_price
+                    ? `<span class="font-bold text-gray-800">${formatDZD(p.price)}</span><span class="text-xs text-gray-400 line-through mr-1">${formatDZD(p.compare_at_price)}</span>`
+                    : `<span class="font-bold text-gray-800">${formatDZD(p.price)}</span>`;
+                const quantityHtml = isOutOfStock
+                    ? `<span class="text-gray-400">0</span>`
+                    : (p.quantity <= 5 ? `<span class="text-yellow-600 font-bold">${p.quantity}</span><span class="text-xs text-gray-400"> متبقية</span>` : `<span class="text-gray-600">${p.quantity}</span>`);
+
+                return `
+                    <tr class="${rowClass}">
+                        <td class="px-6 py-4"><input type="checkbox" class="row-checkbox w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-id="${p.id}"></td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                ${thumbnail}
+                                <div>
+                                    <p class="font-bold text-gray-800">${escapeHtml(p.name)}</p>
+                                    <p class="text-xs text-gray-400">${p.sku ? 'SKU: ' + escapeHtml(p.sku) : ''}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">${CATEGORY_LABELS[p.category] || p.category}</td>
+                        <td class="px-6 py-4">${priceHtml}</td>
+                        <td class="px-6 py-4">${quantityHtml}</td>
+                        <td class="px-6 py-4">${isOutOfStock ? '<span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">نفدت الكمية</span>' : (STATUS_BADGES[p.status] || p.status)}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <a href="vendor-add-product.html?id=${p.id}" class="text-gray-500 hover:bg-gray-100 w-8 h-8 rounded-lg transition-colors inline-flex items-center justify-center" title="تعديل"><i class="fa-solid fa-pen"></i></a>
+                                <button onclick="deleteProduct(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')" class="text-red-500 hover:bg-red-50 w-8 h-8 rounded-lg transition-colors" title="حذف"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+
+            document.querySelectorAll(".row-checkbox").forEach(cb => cb.addEventListener("change", updateBulkBar));
+            document.getElementById("selectAllCheckbox").checked = false;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderPagination(pagination) {
+            document.getElementById("resultsCount").textContent =
+                `عرض ${(pagination.page - 1) * pagination.limit + 1} إلى ${Math.min(pagination.page * pagination.limit, pagination.total)} من أصل ${pagination.total} منتج`;
+
+            const container = document.getElementById("paginationButtons");
+            if (pagination.total_pages <= 1) { container.innerHTML = ""; return; }
+
+            let html = "";
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                html += `<button onclick="loadProducts(${i})" class="w-9 h-9 rounded-lg ${i === pagination.page ? 'bg-blue-600 text-white font-bold' : 'border border-gray-200 text-gray-600 hover:bg-gray-100'} transition-colors">${i}</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        async function deleteProduct(id, name) {
+            if (!confirm(`هل أنت متأكد من حذف "${name}"؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+            try {
+                await apiRequest(`/api/products/${id}`, { method: "DELETE" });
+                loadProducts(currentPage);
+                loadStats();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function updateBulkBar() {
+            const checked = document.querySelectorAll(".row-checkbox:checked");
+            const bar = document.getElementById("bulkActionsBar");
+            if (checked.length > 0) {
+                bar.classList.remove("hidden");
+                document.getElementById("selectedCount").textContent = checked.length;
+            } else {
+                bar.classList.add("hidden");
+            }
+        }
+
+        document.getElementById("selectAllCheckbox").addEventListener("change", (e) => {
+            document.querySelectorAll(".row-checkbox").forEach(cb => cb.checked = e.target.checked);
+            updateBulkBar();
+        });
+
+        document.getElementById("bulkDeleteBtn").addEventListener("click", async () => {
+            const ids = [...document.querySelectorAll(".row-checkbox:checked")].map(cb => cb.dataset.id);
+            if (ids.length === 0) return;
+            if (!confirm(`هل أنت متأكد من حذف ${ids.length} منتج؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+
+            try {
+                // استدعاءات حذف متوازية لكل منتج محدد (يعيد استخدام نفس مسار الحذف الفردي الموجود أصلاً)
+                await Promise.all(ids.map(id => apiRequest(`/api/products/${id}`, { method: "DELETE" })));
+                loadProducts(currentPage);
+                loadStats();
+            } catch (err) {
+                alert(err.message);
+                loadProducts(currentPage);
+            }
+        });
+
+        document.getElementById("searchInput").addEventListener("input", () => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => loadProducts(1), 400);
+        });
+        document.getElementById("statusFilter").addEventListener("change", () => loadProducts(1));
+
+        loadStats();
+        loadProducts();
+    </script>
+</body>
+</html>

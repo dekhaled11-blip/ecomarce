@@ -1,0 +1,14 @@
+# ============================================
+# رؤوس أمان تُطبَّق على كل صفحات الموقع — اصطلاح Cloudflare Pages
+# (يُقرأ هذا الملف تلقائياً لو الموقع مُستضاف عبر Cloudflare Pages، بدون أي إعداد إضافي)
+# ============================================
+
+/*
+  # CSP مبنية على مسح فعلي لكل النطاقات الخارجية المستخدمة بملفات الموقع (grep على *.html)
+  # 'unsafe-inline' بـscript-src ضروري حالياً لأن كل منطق الصفحات مكتوب بوسوم <script> داخلية
+  # + خصائص onclick= مباشرة (نمط التصميم الحالي بكل صفحات الموقع) — إزالته يتطلب نقل كل هذا
+  # الكود لملفات .js خارجية منفصلة (إعادة هيكلة كبيرة لم تُطلب، خارج نطاق هذا التعديل)
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' https://ui-avatars.com ضع-هنا-رابط-R2-العام; connect-src 'self' ضع-هنا-رابط-API-العام; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin

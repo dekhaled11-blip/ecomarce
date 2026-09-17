@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم المشرف | تفعيل حساب التاجر</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-blue-700">
+                <i class="fa-solid fa-shield-halved ml-2"></i>لوحة المشرف
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="admin-vendors.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-store w-6"></i>
+                <span class="font-medium">التجار</span>
+            </a>
+            <a href="admin-activation-queue.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-credit-card w-6"></i>
+                <span class="font-medium">الاشتراكات والمدفوعات</span>
+                <span class="mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold">4</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">كل الطلبات</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">إعدادات المنصة</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="adminName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- الشريط العلوي -->
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <div class="flex items-center">
+                <button class="md:hidden text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <h2 class="hidden md:block text-xl font-bold text-gray-800">تفاصيل التاجر</h2>
+            </div>
+        </header>
+
+        <!-- مساحة العمل القابلة للتمرير -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+
+            <!-- حالة التحميل -->
+            <div id="loadingState" class="text-center py-16 text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                <p>جارٍ تحميل بيانات التاجر...</p>
+            </div>
+
+            <!-- حالة الخطأ -->
+            <div id="errorState" class="hidden text-center py-16">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-red-600" id="errorText"></p>
+                <a href="admin-vendors.html" class="mt-4 inline-block text-sm text-blue-600 hover:underline">العودة لقائمة التجار</a>
+            </div>
+
+            <div id="detailContent" class="hidden">
+
+            <!-- مسار التنقل -->
+            <nav class="text-sm text-gray-500 mb-6 flex items-center space-x-2 space-x-reverse">
+                <a href="admin-vendors.html" class="hover:text-blue-600">التجار</a>
+                <span>/</span>
+                <span id="breadcrumbName" class="text-gray-800 font-bold">...</span>
+            </nav>
+
+            <div id="actionErrorBanner" class="hidden mb-5 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="actionErrorText"></span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- العمود الأيمن: تفاصيل التاجر والدفع -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- بطاقة التنبيه الرئيسية (تتغير حسب الحالة) -->
+                    <div id="statusBanner" class="rounded-2xl p-6 flex items-start gap-4"></div>
+
+                    <!-- بطاقة معلومات التاجر -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="border-b border-gray-100 px-6 py-4 bg-gray-50">
+                            <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-store text-blue-600 ml-2"></i>معلومات التاجر</h3>
+                        </div>
+                        <div class="p-6 flex items-center gap-4">
+                            <img id="vendorAvatarImg" src="" class="w-16 h-16 rounded-full" alt="">
+                            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                <div><span class="text-gray-500">اسم المتجر:</span> <span id="detailStoreName" class="font-bold text-gray-800">—</span></div>
+                                <div><span class="text-gray-500">صاحب المتجر:</span> <span id="detailOwnerName" class="font-bold text-gray-800">—</span></div>
+                                <div><span class="text-gray-500">البريد الإلكتروني:</span> <span id="detailEmail" class="font-bold text-gray-800" dir="ltr">—</span></div>
+                                <div><span class="text-gray-500">الهاتف:</span> <span id="detailPhone" class="font-bold text-gray-800" dir="ltr">—</span></div>
+                                <div><span class="text-gray-500">تاريخ التسجيل:</span> <span id="detailCreatedAt" class="font-bold text-gray-800">—</span></div>
+                                <div><span class="text-gray-500">رابط المتجر:</span> <a id="detailStoreLink" href="#" class="font-bold text-blue-600 hover:underline" dir="ltr">عرض المتجر</a></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- بطاقة إثبات الدفع -->
+                    <div id="paymentCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="border-b border-gray-100 px-6 py-4 bg-gray-50">
+                            <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-receipt text-blue-600 ml-2"></i>آخر دفعة مُرسَلة</h3>
+                        </div>
+                        <div id="paymentCardBody" class="p-6"></div>
+                    </div>
+
+                    <!-- سجل الاشتراكات السابقة -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="border-b border-gray-100 px-6 py-4 bg-gray-50">
+                            <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-clock-rotate-left text-blue-600 ml-2"></i>سجل الاشتراكات</h3>
+                        </div>
+                        <table class="w-full text-sm text-right">
+                            <thead>
+                                <tr class="text-gray-500 border-b border-gray-100">
+                                    <th class="px-6 py-3 font-medium">الفترة</th>
+                                    <th class="px-6 py-3 font-medium">المبلغ</th>
+                                    <th class="px-6 py-3 font-medium">طريقة الدفع</th>
+                                    <th class="px-6 py-3 font-medium">الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsHistoryBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                        <p id="noPaymentsText" class="hidden text-center text-gray-400 py-8 text-sm">لا يوجد أي سجل دفعات لهذا التاجر بعد</p>
+                    </div>
+
+                </div>
+
+                <!-- العمود الأيسر: ملخص وإجراءات -->
+                <div class="space-y-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-0">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4">حالة الحساب</h3>
+
+                        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                            <span class="text-sm text-gray-500">الحالة الحالية</span>
+                            <span id="statusBadge" class="text-xs font-bold px-3 py-1 rounded-full">—</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                            <span class="text-sm text-gray-500">الخطة</span>
+                            <span class="text-sm font-bold text-gray-800">اشتراك شهري</span>
+                        </div>
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-sm text-gray-500">القيمة الشهرية</span>
+                            <span class="text-sm font-bold text-gray-800">1,500 دج / شهر</span>
+                        </div>
+
+                        <!-- أزرار الإجراء (تتغير حسب الحالة) -->
+                        <div id="actionButtons" class="space-y-3"></div>
+                    </div>
+                </div>
+
+            </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/admin-guard.js"></script>
+    <script>
+        const STATUS_LABELS = {
+            trial: "تجربة مجانية", active: "نشط", pending_payment: "بانتظار الدفع", suspended: "معلّق"
+        };
+        const STATUS_COLORS = {
+            trial: "bg-yellow-100 text-yellow-700", active: "bg-green-100 text-green-700",
+            pending_payment: "bg-blue-100 text-blue-700", suspended: "bg-red-100 text-red-700"
+        };
+        const PAYMENT_STATUS_LABELS = { pending: "قيد المراجعة", approved: "معتمدة", rejected: "مرفوضة" };
+        const PAYMENT_STATUS_COLORS = {
+            pending: "bg-blue-100 text-blue-700", approved: "bg-green-100 text-green-700", rejected: "bg-red-100 text-red-700"
+        };
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str || "";
+            return div.innerHTML;
+        }
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+        function formatDate(isoDate) {
+            return new Date(isoDate).toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
+        }
+        function daysSince(isoDate) {
+            return Math.floor((new Date() - new Date(isoDate)) / (1000 * 60 * 60 * 24));
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const vendorId = params.get("id");
+        let currentVendor = null;
+
+        async function loadVendor() {
+            if (!vendorId) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = "معرّف التاجر غير محدد بالرابط";
+                document.getElementById("errorState").classList.remove("hidden");
+                return;
+            }
+            try {
+                const vendor = await apiRequest(`/api/admin/vendors/${vendorId}`);
+                currentVendor = vendor;
+                renderVendor(vendor);
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("detailContent").classList.remove("hidden");
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        function renderVendor(vendor) {
+            document.title = `لوحة تحكم المشرف | تفاصيل ${vendor.store_name}`;
+            document.getElementById("breadcrumbName").textContent = vendor.store_name;
+
+            const avatarColor = ["1d4ed8", "e11d48", "047857", "a21caf", "b45309"][vendor.id % 5];
+            document.getElementById("vendorAvatarImg").src = `https://ui-avatars.com/api/?name=${encodeURIComponent(vendor.store_name)}&background=${avatarColor}&color=fff&size=80`;
+
+            document.getElementById("detailStoreName").textContent = vendor.store_name;
+            document.getElementById("detailOwnerName").textContent = vendor.owner_name;
+            document.getElementById("detailEmail").textContent = vendor.email;
+            document.getElementById("detailPhone").textContent = vendor.phone;
+            document.getElementById("detailCreatedAt").textContent = formatDate(vendor.created_at);
+            document.getElementById("detailStoreLink").href = `store.html?id=${vendor.id}`;
+
+            const badge = document.getElementById("statusBadge");
+            badge.textContent = STATUS_LABELS[vendor.status];
+            badge.className = `text-xs font-bold px-3 py-1 rounded-full ${STATUS_COLORS[vendor.status]}`;
+
+            renderStatusBanner(vendor);
+            renderPaymentCard(vendor.payments);
+            renderPaymentsHistory(vendor.payments);
+            renderActionButtons(vendor);
+        }
+
+        function renderStatusBanner(vendor) {
+            const banner = document.getElementById("statusBanner");
+            const configs = {
+                trial: {
+                    bg: "bg-yellow-50 border border-yellow-200", icon: "bg-yellow-600", i: "fa-hourglass-half",
+                    title: "حساب بفترة تجريبية", text: "لا يزال هذا التاجر ضمن الأسبوع التجريبي المجاني."
+                },
+                active: {
+                    bg: "bg-green-50 border border-green-200", icon: "bg-green-600", i: "fa-check",
+                    title: "حساب نشط", text: "هذا التاجر مفعّل حالياً ويمكنه استقبال الطلبات."
+                },
+                pending_payment: {
+                    bg: "bg-blue-50 border border-blue-200", icon: "bg-blue-600", i: "fa-circle-info",
+                    title: "انتهت الفترة التجريبية بانتظار تأكيد الدفع",
+                    text: vendor.payments.some(p => p.status === "pending")
+                        ? "تم استلام إثبات دفع، راجع التفاصيل أدناه قبل تفعيل الحساب."
+                        : "لم يُرسل هذا التاجر أي إثبات دفع حتى الآن."
+                },
+                suspended: {
+                    bg: "bg-red-50 border border-red-200", icon: "bg-red-600", i: "fa-ban",
+                    title: "حساب معلّق", text: "هذا التاجر لا يستطيع الوصول لمتجره حالياً."
+                }
+            };
+            const c = configs[vendor.status];
+            banner.className = `rounded-2xl p-6 flex items-start gap-4 ${c.bg}`;
+            banner.innerHTML = `
+                <div class="w-12 h-12 ${c.icon} text-white rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                    <i class="fa-solid ${c.i}"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 mb-1">${c.title}</h3>
+                    <p class="text-sm text-gray-700">${c.text}</p>
+                </div>
+            `;
+        }
+
+        function renderPaymentCard(payments) {
+            const card = document.getElementById("paymentCard");
+            const body = document.getElementById("paymentCardBody");
+            const latest = payments[0]; // الأحدث أولاً (مرتّبة من الباك اند بـ created_at DESC)
+
+            if (!latest) {
+                card.classList.add("hidden");
+                return;
+            }
+            card.classList.remove("hidden");
+
+            body.innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 text-sm">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <p class="text-gray-500 mb-1">المبلغ</p>
+                        <p class="font-extrabold text-gray-800 text-lg">${formatDZD(latest.amount)}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <p class="text-gray-500 mb-1">طريقة الدفع</p>
+                        <p class="font-bold text-gray-800">${escapeHtml(latest.payment_method)}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                        <p class="text-gray-500 mb-1">تاريخ الإرسال</p>
+                        <p class="font-bold text-gray-800">${formatDate(latest.created_at)}</p>
+                    </div>
+                </div>
+                <p class="text-sm font-medium text-gray-700 mb-2">إيصال الدفع المرفق</p>
+                ${latest.receipt_url
+                    ? `<a href="${latest.receipt_url}" target="_blank" rel="noopener"><img src="${latest.receipt_url}" class="max-h-64 rounded-xl border border-gray-200 hover:opacity-90 transition-opacity" alt="إيصال الدفع"></a>`
+                    : `<div class="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex items-center justify-center h-40 text-gray-400">
+                        <div class="text-center"><i class="fa-solid fa-file-image text-3xl mb-2"></i><p class="text-sm">لا يوجد إيصال مرفق</p></div>
+                       </div>`}
+            `;
+        }
+
+        function renderPaymentsHistory(payments) {
+            const tbody = document.getElementById("paymentsHistoryBody");
+            if (payments.length === 0) {
+                document.getElementById("noPaymentsText").classList.remove("hidden");
+                tbody.innerHTML = "";
+                return;
+            }
+            document.getElementById("noPaymentsText").classList.add("hidden");
+            tbody.innerHTML = payments.map(p => `
+                <tr>
+                    <td class="px-6 py-3 text-gray-600">${formatDate(p.period_start)} — ${formatDate(p.period_end)}</td>
+                    <td class="px-6 py-3 text-gray-600">${formatDZD(p.amount)}</td>
+                    <td class="px-6 py-3 text-gray-600">${escapeHtml(p.payment_method)}</td>
+                    <td class="px-6 py-3"><span class="${PAYMENT_STATUS_COLORS[p.status]} text-xs font-bold px-3 py-1 rounded-full">${PAYMENT_STATUS_LABELS[p.status]}</span></td>
+                </tr>
+            `).join("");
+        }
+
+        function renderActionButtons(vendor) {
+            const container = document.getElementById("actionButtons");
+            const hasPendingPayment = vendor.payments.some(p => p.status === "pending");
+            let html = "";
+
+            if (vendor.status === "pending_payment" && hasPendingPayment) {
+                html += `<button onclick="activateVendor()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg py-3 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-check ml-2"></i> تأكيد الدفع وتفعيل الحساب</button>`;
+                html += `<button onclick="rejectPayment()" class="w-full border border-red-200 text-red-600 hover:bg-red-50 font-medium rounded-lg py-3 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-xmark ml-2"></i> رفض الإثبات</button>`;
+            }
+            if (vendor.status === "pending_payment" && !hasPendingPayment) {
+                html += `<button onclick="sendReminder()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg py-3 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-bell ml-2"></i> إرسال تذكير دفع</button>`;
+            }
+            if (vendor.status === "trial" || vendor.status === "pending_payment") {
+                html += `<button onclick="extendTrial()" class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg py-3 transition-colors flex items-center justify-center">
+                    <i class="fa-regular fa-clock ml-2"></i> تمديد التجربة 3 أيام</button>`;
+            }
+            if (vendor.status === "suspended") {
+                html += `<button onclick="activateVendor()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg py-3 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-rotate-right ml-2"></i> إعادة التفعيل</button>`;
+            }
+            if (vendor.status === "active" || vendor.status === "trial") {
+                html += `<button onclick="suspendVendor()" class="w-full border border-red-200 text-red-600 hover:bg-red-50 font-medium rounded-lg py-3 transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-ban ml-2"></i> تعليق الحساب</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function showActionError(message) {
+            document.getElementById("actionErrorText").textContent = message;
+            document.getElementById("actionErrorBanner").classList.remove("hidden");
+        }
+
+        async function activateVendor() {
+            if (!confirm("هل أنت متأكد من تفعيل حساب هذا التاجر؟")) return;
+            try {
+                await apiRequest(`/api/admin/vendors/${vendorId}/activate`, { method: "PUT" });
+                loadVendor();
+            } catch (err) { showActionError(err.message); }
+        }
+        async function rejectPayment() {
+            if (!confirm("هل أنت متأكد من رفض إثبات الدفع؟")) return;
+            try {
+                await apiRequest(`/api/admin/vendors/${vendorId}/reject-payment`, { method: "PUT" });
+                loadVendor();
+            } catch (err) { showActionError(err.message); }
+        }
+        async function sendReminder() {
+            try {
+                await apiRequest(`/api/admin/vendors/${vendorId}/remind`, { method: "PUT" });
+                alert("تم إرسال التذكير بنجاح");
+            } catch (err) { showActionError(err.message); }
+        }
+        async function extendTrial() {
+            if (!confirm("هل تريد تمديد التجربة 3 أيام إضافية؟")) return;
+            try {
+                await apiRequest(`/api/admin/vendors/${vendorId}/extend-trial`, { method: "PUT", body: JSON.stringify({ days: 3 }) });
+                loadVendor();
+            } catch (err) { showActionError(err.message); }
+        }
+        async function suspendVendor() {
+            if (!confirm("هل أنت متأكد من تعليق حساب هذا التاجر؟")) return;
+            try {
+                await apiRequest(`/api/admin/vendors/${vendorId}/suspend`, { method: "PUT" });
+                loadVendor();
+            } catch (err) { showActionError(err.message); }
+        }
+
+        loadVendor();
+    </script>
+</body>
+</html>

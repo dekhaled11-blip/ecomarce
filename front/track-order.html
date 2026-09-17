@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تتبع طلبي | منصتي</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- الشريط العلوي -->
+    <header class="bg-white shadow-sm sticky top-0 z-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
+            <a href="index.html" class="text-2xl font-bold text-blue-700"><i class="fa-solid fa-store ml-2"></i>منصتي</a>
+            <a href="index.html" class="text-sm text-gray-500 hover:text-blue-600 transition-colors">
+                <i class="fa-solid fa-arrow-right ml-1"></i> العودة للمتجر
+            </a>
+        </div>
+    </header>
+
+    <div class="max-w-2xl mx-auto px-4 sm:px-8 py-12">
+
+        <!-- بطاقة البحث عن الطلب -->
+        <div id="searchCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+                <i class="fa-solid fa-magnifying-glass-location"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">تتبع طلبك</h2>
+            <p class="text-sm text-gray-500 mb-8">أدخل رقم الطلب ورقم الهاتف المستعمل عند الطلب لعرض حالته</p>
+
+            <div id="trackError" class="hidden mb-5 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2 text-right">
+                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                <span id="trackErrorText"></span>
+            </div>
+
+            <div class="space-y-4 text-right">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">رقم الطلب <span class="text-red-500">*</span></label>
+                    <input id="orderNumberInput" type="text" dir="ltr" placeholder="مثال: ORD-3388" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-400 mt-1">تجده في رسالة تأكيد الطلب المرسلة إليك</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">رقم الهاتف <span class="text-red-500">*</span></label>
+                    <input id="phoneInput" type="tel" dir="ltr" placeholder="05XX XX XX XX" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right">
+                    <p class="text-xs text-gray-400 mt-1">نفس الرقم الذي استعملته عند تقديم الطلب</p>
+                </div>
+                <button type="button" id="trackBtn" onclick="showResult()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg py-3.5 transition-colors flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                    <span id="trackBtnText"><i class="fa-solid fa-search ml-2"></i> عرض حالة الطلب</span>
+                    <i id="trackBtnSpinner" class="fa-solid fa-circle-notch fa-spin mr-2 hidden"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-400 mt-6 flex items-center justify-center gap-1">
+                <i class="fa-solid fa-lock text-gray-300"></i> نطلب الرقمين معاً لحماية خصوصية طلبك
+            </p>
+        </div>
+
+        <!-- نتيجة التتبع (مخفية افتراضياً) -->
+        <div id="resultCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="text-xs text-gray-500">رقم الطلب</p>
+                    <h3 id="resultOrderNumber" class="text-xl font-bold text-gray-800" dir="ltr">—</h3>
+                </div>
+                <span id="resultStatusBadge" class="text-sm font-bold px-4 py-2 rounded-full">—</span>
+            </div>
+
+            <!-- مسار حالة الطلب -->
+            <div id="progressTrack" class="flex items-center justify-between relative mb-8">
+                <div class="absolute top-4 right-4 left-4 h-1 bg-gray-100 z-0">
+                    <div id="progressBarFill" class="h-1 bg-blue-600" style="width: 0%"></div>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2 text-center w-1/4">
+                    <div id="stepIcon0" class="w-9 h-9 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-sm"><i class="fa-solid fa-check"></i></div>
+                    <p id="stepLabel0" class="text-xs font-medium text-gray-400">تم الاستلام</p>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2 text-center w-1/4">
+                    <div id="stepIcon1" class="w-9 h-9 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-sm"><i class="fa-solid fa-box"></i></div>
+                    <p id="stepLabel1" class="text-xs font-medium text-gray-400">قيد التجهيز</p>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2 text-center w-1/4">
+                    <div id="stepIcon2" class="w-9 h-9 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-sm"><i class="fa-solid fa-truck-fast"></i></div>
+                    <p id="stepLabel2" class="text-xs font-medium text-gray-400">تم الشحن</p>
+                </div>
+                <div class="relative z-10 flex flex-col items-center gap-2 text-center w-1/4">
+                    <div id="stepIcon3" class="w-9 h-9 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-sm"><i class="fa-solid fa-flag-checkered"></i></div>
+                    <p id="stepLabel3" class="text-xs font-medium text-gray-400">تم التوصيل</p>
+                </div>
+            </div>
+
+            <!-- تنبيه إلغاء (يظهر فقط لو حالة الطلب ملغاة) -->
+            <div id="cancelledNotice" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-start gap-2">
+                <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+                <span>تم إلغاء هذا الطلب.</span>
+            </div>
+
+            <!-- تفاصيل مختصرة -->
+            <div class="border-t border-gray-100 pt-4 space-y-3 text-sm">
+                <div id="itemsRows" class="space-y-2"></div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">طريقة التوصيل</span>
+                    <span id="resultDeliveryInfo" class="font-bold text-gray-800">—</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">المجموع الكلي</span>
+                    <span id="resultTotal" class="font-bold text-gray-800">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- حالة عدم العثور على الطلب -->
+        <p class="text-center text-sm text-gray-400 mt-6">
+            لم تجد طلبك؟ تأكد من صحة رقم الطلب ورقم الهاتف، أو 
+            <a href="contact.html" class="text-blue-600 font-medium hover:underline">تواصل معنا</a>
+        </p>
+
+    </div>
+
+    <script src="assets/api-config.js"></script>
+    <script>
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str == null ? "" : str;
+            return div.innerHTML;
+        }
+
+        const STATUS_LABELS = {
+            new: "طلب جديد", processing: "قيد التجهيز", shipped: "تم الشحن",
+            delivered: "تم التوصيل", cancelled: "ملغى"
+        };
+        const STATUS_BADGE_CLASS = {
+            new: "bg-yellow-100 text-yellow-700", processing: "bg-blue-100 text-blue-700",
+            shipped: "bg-indigo-100 text-indigo-700", delivered: "bg-green-100 text-green-700",
+            cancelled: "bg-red-100 text-red-700"
+        };
+        // ترتيب المراحل بمسار التتبع البصري (بدون "cancelled" لأن له عرض خاص)
+        const STEP_ORDER = ["new", "processing", "shipped", "delivered"];
+
+        // تُقرأ من URL تلقائياً لو الزبون وصل من رابط تأكيد الطلب (order_number=...&phone=...)
+        function prefillFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const orderNumber = params.get("order_number");
+            const phone = params.get("phone");
+            if (orderNumber) document.getElementById("orderNumberInput").value = orderNumber;
+            if (phone) document.getElementById("phoneInput").value = phone;
+            if (orderNumber && phone) showResult();
+        }
+
+        function hideError() {
+            document.getElementById("trackError").classList.add("hidden");
+        }
+        function showTrackError(message) {
+            document.getElementById("trackErrorText").textContent = message;
+            document.getElementById("trackError").classList.remove("hidden");
+        }
+
+        function setLoading(isLoading) {
+            document.getElementById("trackBtn").disabled = isLoading;
+            document.getElementById("trackBtnText").classList.toggle("hidden", isLoading);
+            document.getElementById("trackBtnSpinner").classList.toggle("hidden", !isLoading);
+        }
+
+        async function showResult() {
+            hideError();
+            const orderNumber = document.getElementById("orderNumberInput").value.trim();
+            const phone = document.getElementById("phoneInput").value.trim();
+
+            if (!orderNumber || !phone) {
+                showTrackError("يرجى إدخال رقم الطلب ورقم الهاتف معاً");
+                return;
+            }
+
+            setLoading(true);
+            document.getElementById("resultCard").classList.add("hidden");
+
+            try {
+                const order = await apiRequest(
+                    `/api/orders/track?order_number=${encodeURIComponent(orderNumber)}&phone=${encodeURIComponent(phone)}`
+                );
+                renderResult(order);
+                document.getElementById("resultCard").classList.remove("hidden");
+                document.getElementById("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+            } catch (err) {
+                showTrackError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function renderResult(order) {
+            document.getElementById("resultOrderNumber").textContent = `#${order.order_number}`;
+
+            const badge = document.getElementById("resultStatusBadge");
+            badge.textContent = STATUS_LABELS[order.status] || order.status;
+            badge.className = `text-sm font-bold px-4 py-2 rounded-full ${STATUS_BADGE_CLASS[order.status] || "bg-gray-100 text-gray-700"}`;
+
+            const isCancelled = order.status === "cancelled";
+            document.getElementById("cancelledNotice").classList.toggle("hidden", !isCancelled);
+            document.getElementById("progressTrack").classList.toggle("hidden", isCancelled);
+
+            if (!isCancelled) {
+                const currentIndex = STEP_ORDER.indexOf(order.status);
+                const fillPercent = currentIndex >= 0 ? (currentIndex / (STEP_ORDER.length - 1)) * 100 : 0;
+                document.getElementById("progressBarFill").style.width = `${fillPercent}%`;
+
+                STEP_ORDER.forEach((step, i) => {
+                    const icon = document.getElementById(`stepIcon${i}`);
+                    const label = document.getElementById(`stepLabel${i}`);
+                    const reached = currentIndex >= 0 && i <= currentIndex;
+                    icon.className = `w-9 h-9 rounded-full flex items-center justify-center text-sm ${reached ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-400"}`;
+                    label.className = `text-xs ${reached ? "font-bold text-gray-800" : "font-medium text-gray-400"}`;
+                });
+            }
+
+            // عناصر الطلب
+            const itemsRows = document.getElementById("itemsRows");
+            itemsRows.innerHTML = order.items.map(item => `
+                <div class="flex justify-between">
+                    <span class="text-gray-500">${escapeHtml(item.product_name)}${item.selected_attributes ? ` (${escapeHtml(item.selected_attributes)})` : ""}</span>
+                    <span class="font-bold text-gray-800">× ${item.quantity}</span>
+                </div>
+            `).join("");
+
+            const deliveryLabel = order.delivery_type === "home" ? "توصيل للمنزل" : "مكتب توصيل";
+            document.getElementById("resultDeliveryInfo").textContent = `${deliveryLabel} — ${order.wilaya}, ${order.commune}`;
+            document.getElementById("resultTotal").textContent = formatDZD(order.total);
+        }
+
+        prefillFromUrl();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم التاجر | إدارة الطلبات</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-blue-700">
+                <i class="fa-solid fa-store ml-2"></i>منصتي
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="vendor-dashboard.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="vendor-products.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-box-open w-6"></i>
+                <span class="font-medium">المنتجات</span>
+            </a>
+            <a href="vendor-orders.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">الطلبات</span>
+                <span class="mr-auto bg-white text-blue-700 py-1 px-2 rounded-full text-xs font-bold">3</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-wallet w-6"></i>
+                <span class="font-medium">الأرباح</span>
+            </a>
+            <a href="vendor-settings.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">إعدادات المتجر</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img id="vendorAvatar" src="https://ui-avatars.com/api/?name=أحمد&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="vendorName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- الشريط العلوي -->
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <div class="flex items-center">
+                <button class="md:hidden text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <h2 class="hidden md:block text-xl font-bold text-gray-800">إدارة الطلبات</h2>
+            </div>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- مساحة العمل القابلة للتمرير -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+
+            <!-- إحصائيات سريعة -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">طلبات جديدة</p>
+                    <h3 id="statNew" class="text-2xl font-bold text-gray-800">—</h3>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">قيد التجهيز</p>
+                    <h3 id="statProcessing" class="text-2xl font-bold text-blue-600">—</h3>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">تم الشحن</p>
+                    <h3 id="statShipped" class="text-2xl font-bold text-indigo-600">—</h3>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">تم التوصيل</p>
+                    <h3 id="statDelivered" class="text-2xl font-bold text-green-600">—</h3>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+                    <p class="text-xs text-gray-500 mb-1">ملغاة</p>
+                    <h3 id="statCancelled" class="text-2xl font-bold text-red-600">—</h3>
+                </div>
+            </div>
+
+            <!-- جدول الطلبات -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+                <!-- شريط البحث والفلاتر -->
+                <div class="border-b border-gray-100 px-6 py-4 flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between bg-gray-50">
+                    <h3 class="font-bold text-lg text-gray-800 whitespace-nowrap"><i class="fa-solid fa-list text-blue-600 ml-2"></i>كل الطلبات</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        <div class="relative">
+                            <input id="searchInput" type="text" placeholder="ابحث برقم الطلب أو اسم الزبون..." class="bg-white border border-gray-200 rounded-lg pl-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-72 transition-all">
+                            <i class="fa-solid fa-search absolute right-4 top-3 text-gray-400 text-sm"></i>
+                        </div>
+                        <select id="statusFilter" class="bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                            <option value="">كل الحالات</option>
+                            <option value="new">جديد</option>
+                            <option value="processing">قيد التجهيز</option>
+                            <option value="shipped">تم الشحن</option>
+                            <option value="delivered">تم التوصيل</option>
+                            <option value="cancelled">ملغى</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- حالة التحميل -->
+                <div id="loadingState" class="text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                    <p>جارٍ تحميل الطلبات...</p>
+                </div>
+
+                <!-- حالة الخطأ -->
+                <div id="errorState" class="hidden text-center py-16">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                    <p class="text-red-600" id="errorText"></p>
+                    <button onclick="loadOrders()" class="mt-4 text-sm text-blue-600 hover:underline">إعادة المحاولة</button>
+                </div>
+
+                <!-- حالة عدم وجود طلبات -->
+                <div id="emptyState" class="hidden text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-inbox text-4xl mb-3"></i>
+                    <p>لا توجد طلبات مطابقة</p>
+                </div>
+
+                <!-- الجدول -->
+                <div id="tableWrapper" class="hidden overflow-x-auto">
+                    <table class="w-full text-sm text-right">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 border-b border-gray-100">
+                                <th class="px-6 py-4 font-medium">رقم الطلب</th>
+                                <th class="px-6 py-4 font-medium">الزبون</th>
+                                <th class="px-6 py-4 font-medium">المنتجات</th>
+                                <th class="px-6 py-4 font-medium">التوصيل</th>
+                                <th class="px-6 py-4 font-medium">المجموع</th>
+                                <th class="px-6 py-4 font-medium">الحالة</th>
+                                <th class="px-6 py-4 font-medium">التاريخ</th>
+                                <th class="px-6 py-4 font-medium"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+
+                <!-- ترقيم الصفحات -->
+                <div id="paginationWrapper" class="hidden border-t border-gray-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+                    <p id="resultsCount" class="text-sm text-gray-500"></p>
+                    <div id="paginationButtons" class="flex items-center gap-2"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/vendor-guard.js"></script>
+    <script>
+        const STATUS_LABELS = {
+            new: "جديد", processing: "قيد التجهيز", shipped: "تم الشحن",
+            delivered: "تم التوصيل", cancelled: "ملغى"
+        };
+        const STATUS_COLORS = {
+            new: "bg-blue-100 text-blue-700", processing: "bg-yellow-100 text-yellow-700",
+            shipped: "bg-indigo-100 text-indigo-700", delivered: "bg-green-100 text-green-700",
+            cancelled: "bg-red-100 text-red-700"
+        };
+
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+
+        function formatDate(isoDate) {
+            const d = new Date(isoDate + "Z");
+            return d.toLocaleDateString("ar-DZ", { day: "numeric", month: "short" }) + "، " +
+                   d.toLocaleTimeString("ar-DZ", { hour: "2-digit", minute: "2-digit" });
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str || "";
+            return div.innerHTML;
+        }
+
+        let searchDebounceTimer = null;
+
+        async function loadOrders(page = 1) {
+            document.getElementById("loadingState").classList.remove("hidden");
+            document.getElementById("errorState").classList.add("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("tableWrapper").classList.add("hidden");
+            document.getElementById("paginationWrapper").classList.add("hidden");
+
+            const search = document.getElementById("searchInput").value.trim().toLowerCase();
+            const status = document.getElementById("statusFilter").value;
+
+            let path = `/api/vendor/orders?page=${page}&limit=10`;
+            if (status) path += `&status=${status}`;
+
+            try {
+                const data = await apiRequest(path);
+                document.getElementById("loadingState").classList.add("hidden");
+
+                renderStats(data.status_counts);
+
+                // فلترة بحث محلية (رقم الطلب أو اسم الزبون) — الباك اند لا يدعم بحثاً نصياً بهذا المسار حالياً
+                const orders = search
+                    ? data.orders.filter(o =>
+                        o.order_number.toLowerCase().includes(search) ||
+                        `${o.customer_name} ${o.customer_lastname}`.toLowerCase().includes(search))
+                    : data.orders;
+
+                if (orders.length === 0) {
+                    document.getElementById("emptyState").classList.remove("hidden");
+                    return;
+                }
+
+                renderTable(orders);
+                renderPagination(data.pagination);
+                document.getElementById("tableWrapper").classList.remove("hidden");
+                document.getElementById("paginationWrapper").classList.remove("hidden");
+
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        function renderStats(counts) {
+            document.getElementById("statNew").textContent = counts.new;
+            document.getElementById("statProcessing").textContent = counts.processing;
+            document.getElementById("statShipped").textContent = counts.shipped;
+            document.getElementById("statDelivered").textContent = counts.delivered;
+            document.getElementById("statCancelled").textContent = counts.cancelled;
+        }
+
+        function renderTable(orders) {
+            const tbody = document.getElementById("ordersTableBody");
+            tbody.innerHTML = orders.map(o => {
+                const deliveryIcon = o.delivery_type === "home" ? "fa-house" : "fa-truck-fast";
+                const deliveryLabel = o.delivery_type === "home" ? "المنزل" : "مكتب توصيل";
+                const rowClass = o.status === "cancelled" ? "hover:bg-gray-50 transition-colors cursor-pointer opacity-70" : "hover:bg-gray-50 transition-colors cursor-pointer";
+
+                return `
+                    <tr class="${rowClass}" onclick="window.location.href='vendor-order-detail.html?id=${o.id}'">
+                        <td class="px-6 py-4 font-bold text-blue-700" dir="ltr">${escapeHtml(o.order_number)}</td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-gray-800">${escapeHtml(o.customer_name)} ${escapeHtml(o.customer_lastname)}</p>
+                            <p class="text-xs text-gray-400" dir="ltr">${escapeHtml(o.customer_phone)}</p>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">${escapeHtml(o.items_summary || "—")}</td>
+                        <td class="px-6 py-4 text-gray-600">
+                            <i class="fa-solid ${deliveryIcon} text-gray-400 ml-1"></i> ${deliveryLabel} — ${escapeHtml(o.wilaya)}
+                        </td>
+                        <td class="px-6 py-4 font-bold text-gray-800">${formatDZD(o.total)}</td>
+                        <td class="px-6 py-4">
+                            <span class="${STATUS_COLORS[o.status]} text-xs font-bold px-3 py-1 rounded-full">${STATUS_LABELS[o.status]}</span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">${formatDate(o.created_at)}</td>
+                        <td class="px-6 py-4">
+                            <a href="vendor-order-detail.html?id=${o.id}" onclick="event.stopPropagation()" class="text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center">عرض <i class="fa-solid fa-chevron-left mr-1 text-[10px]"></i></a>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function renderPagination(pagination) {
+            document.getElementById("resultsCount").textContent =
+                `عرض ${(pagination.page - 1) * pagination.limit + 1} إلى ${Math.min(pagination.page * pagination.limit, pagination.total)} من أصل ${pagination.total} طلب`;
+
+            const container = document.getElementById("paginationButtons");
+            if (pagination.total_pages <= 1) { container.innerHTML = ""; return; }
+
+            let html = "";
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                html += `<button onclick="loadOrders(${i})" class="w-9 h-9 rounded-lg ${i === pagination.page ? 'bg-blue-600 text-white font-bold' : 'border border-gray-200 text-gray-600 hover:bg-gray-100'} transition-colors">${i}</button>`;
+            }
+            container.innerHTML = html;
+        }
+
+        document.getElementById("searchInput").addEventListener("input", () => {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => loadOrders(1), 400);
+        });
+        document.getElementById("statusFilter").addEventListener("change", () => loadOrders(1));
+
+        loadOrders();
+    </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظرة عامة | منصتي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <a href="index.html" class="text-2xl font-bold text-blue-700"><i class="fa-solid fa-store ml-2"></i>منصتي</a>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="vendor-dashboard.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i><span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="vendor-products.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-box-open w-6"></i><span class="font-medium">المنتجات</span>
+            </a>
+            <a href="vendor-orders.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i><span class="font-medium">الطلبات</span>
+            </a>
+            <a href="vendor-notifications.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-bell w-6"></i><span class="font-medium">الإشعارات</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-wallet w-6"></i><span class="font-medium">الأرباح</span>
+            </a>
+            <a href="vendor-settings.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i><span class="font-medium">إعدادات المتجر</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img id="vendorAvatar" src="https://ui-avatars.com/api/?name=تاجر&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="vendorName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <h2 class="text-xl font-bold text-gray-800">نظرة عامة</h2>
+            <button id="refreshBtn" class="text-sm text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-right"></i> تحديث
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+            <div class="max-w-6xl mx-auto">
+
+                <!-- حالة التحميل -->
+                <div id="loadingState" class="text-center py-16 text-gray-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                    <p>جارٍ تحميل البيانات...</p>
+                </div>
+
+                <!-- حالة الخطأ -->
+                <div id="errorState" class="hidden text-center py-16">
+                    <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                    <p class="text-red-600" id="errorText"></p>
+                    <button onclick="loadDashboard()" class="mt-4 text-sm text-blue-600 hover:underline">إعادة المحاولة</button>
+                </div>
+
+                <!-- المحتوى الفعلي -->
+                <div id="dashboardContent" class="hidden space-y-6">
+
+                    <!-- تنبيه حالة الحساب -->
+                    <div id="accountBanner" class="hidden rounded-2xl p-5 flex items-center gap-4 border">
+                        <div id="accountBannerIcon" class="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0"></div>
+                        <p id="accountBannerText" class="text-sm font-medium"></p>
+                    </div>
+
+                    <!-- البطاقات الإحصائية -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm text-gray-500">إجمالي المنتجات</p>
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-box"></i></div>
+                            </div>
+                            <h3 id="statTotalProducts" class="text-2xl font-bold text-gray-800">—</h3>
+                            <p id="statPublishedProducts" class="text-xs text-gray-400 mt-1"></p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm text-gray-500">تنبيهات المخزون</p>
+                                <div class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            </div>
+                            <h3 id="statLowStock" class="text-2xl font-bold text-gray-800">—</h3>
+                            <p id="statOutOfStock" class="text-xs text-gray-400 mt-1"></p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm text-gray-500">الطلبات الجديدة</p>
+                                <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-cart-shopping"></i></div>
+                            </div>
+                            <h3 id="statNewOrders" class="text-2xl font-bold text-gray-800">—</h3>
+                            <p id="statTotalOrders" class="text-xs text-gray-400 mt-1"></p>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm text-gray-500">إجمالي الإيرادات</p>
+                                <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center"><i class="fa-solid fa-sack-dollar"></i></div>
+                            </div>
+                            <h3 id="statRevenue" class="text-2xl font-bold text-gray-800">—</h3>
+                            <p class="text-xs text-gray-400 mt-1">من الطلبات المُسلَّمة فقط</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- رسم الإيرادات -->
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="font-bold text-gray-800 mb-4"><i class="fa-solid fa-chart-line text-blue-600 ml-2"></i>الإيرادات آخر 7 أيام</h3>
+                            <div id="revenueChart" class="flex items-end justify-between gap-2 h-40"></div>
+                        </div>
+
+                        <!-- آخر الطلبات -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-gray-800"><i class="fa-solid fa-list text-blue-600 ml-2"></i>آخر الطلبات</h3>
+                                <a href="vendor-orders.html" class="text-xs text-blue-600 hover:underline">عرض الكل</a>
+                            </div>
+                            <div id="recentOrdersList" class="space-y-3 text-sm"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/vendor-guard.js"></script>
+    <script>
+        const STATUS_LABELS = {
+            new: "جديد", processing: "قيد التجهيز", shipped: "تم الشحن",
+            delivered: "تم التوصيل", cancelled: "ملغى"
+        };
+        const STATUS_COLORS = {
+            new: "bg-blue-100 text-blue-700", processing: "bg-yellow-100 text-yellow-700",
+            shipped: "bg-indigo-100 text-indigo-700", delivered: "bg-green-100 text-green-700",
+            cancelled: "bg-red-100 text-red-700"
+        };
+
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+
+        // كانت مفقودة بهذا الملف تحديداً (بعكس كل صفحات الموقع الأخرى) — أُضيفت لإصلاح ثغرة XSS
+        // بعرض بيانات الطلبات الأخيرة (اسم الزبون ورقم الطلب بيانات يُدخلها الزبون الضيف بحرية)
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str == null ? "" : str;
+            return div.innerHTML;
+        }
+
+        async function loadDashboard() {
+            document.getElementById("loadingState").classList.remove("hidden");
+            document.getElementById("errorState").classList.add("hidden");
+            document.getElementById("dashboardContent").classList.add("hidden");
+
+            try {
+                // طلبان فقط بالتوازي: إحصائيات النظرة العامة + آخر 5 طلبات (مسار جاهز أصلاً)
+                const [stats, ordersData] = await Promise.all([
+                    apiRequest("/api/vendor/dashboard-stats"),
+                    apiRequest("/api/vendor/orders?limit=5")
+                ]);
+
+                renderStats(stats);
+                renderRevenueChart(stats.revenue_chart);
+                renderRecentOrders(ordersData.orders);
+                renderAccountBanner(stats.account);
+
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("dashboardContent").classList.remove("hidden");
+
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        function renderStats(stats) {
+            document.getElementById("statTotalProducts").textContent = stats.products.total;
+            document.getElementById("statPublishedProducts").textContent = `${stats.products.published} منشور`;
+
+            document.getElementById("statLowStock").textContent = stats.products.low_stock;
+            document.getElementById("statOutOfStock").textContent = `${stats.products.out_of_stock} نفدت كميته`;
+
+            document.getElementById("statNewOrders").textContent = stats.orders.new;
+            document.getElementById("statTotalOrders").textContent = `من أصل ${stats.orders.total} طلب`;
+
+            document.getElementById("statRevenue").textContent = formatDZD(stats.orders.total_revenue);
+        }
+
+        function renderAccountBanner(account) {
+            const banner = document.getElementById("accountBanner");
+            const icon = document.getElementById("accountBannerIcon");
+            const text = document.getElementById("accountBannerText");
+
+            if (account.status === "trial" && account.days_remaining !== null) {
+                banner.className = "rounded-2xl p-5 flex items-center gap-4 border bg-blue-50 border-blue-200";
+                icon.className = "w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-600 text-white";
+                icon.innerHTML = '<i class="fa-solid fa-hourglass-half"></i>';
+                text.className = "text-sm font-medium text-blue-900";
+                text.textContent = `متبقٍ ${account.days_remaining} يوم على انتهاء فترتك التجريبية المجانية.`;
+                banner.classList.remove("hidden");
+            } else if (account.status === "active" && account.days_remaining !== null && account.days_remaining <= 5) {
+                banner.className = "rounded-2xl p-5 flex items-center gap-4 border bg-yellow-50 border-yellow-200";
+                icon.className = "w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-600 text-white";
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                text.className = "text-sm font-medium text-yellow-900";
+                text.textContent = `متبقٍ ${account.days_remaining} يوم على انتهاء اشتراكك الشهري.`;
+                banner.classList.remove("hidden");
+            } else {
+                banner.classList.add("hidden");
+            }
+        }
+
+        function renderRevenueChart(chartData) {
+            const container = document.getElementById("revenueChart");
+            const maxRevenue = Math.max(...chartData.map(d => d.revenue), 1);
+            const dayNames = ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
+
+            container.innerHTML = chartData.map(d => {
+                const heightPct = Math.max(4, (d.revenue / maxRevenue) * 100);
+                const dayLabel = dayNames[new Date(d.day + "T00:00:00Z").getUTCDay()];
+                return `
+                    <div class="flex-1 flex flex-col items-center justify-end h-full gap-2">
+                        <div class="w-full bg-blue-500 rounded-t-md hover:bg-blue-600 transition-colors" style="height: ${heightPct}%" title="${formatDZD(d.revenue)}"></div>
+                        <span class="text-[10px] text-gray-400">${dayLabel}</span>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderRecentOrders(orders) {
+            const container = document.getElementById("recentOrdersList");
+            if (orders.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center py-6">لا توجد طلبات بعد</p>';
+                return;
+            }
+            container.innerHTML = orders.map(o => `
+                <div class="flex items-center justify-between border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                    <div>
+                        <p class="font-bold text-gray-800 text-xs" dir="ltr">${escapeHtml(o.order_number)}</p>
+                        <p class="text-xs text-gray-400">${escapeHtml(o.customer_name)} ${escapeHtml(o.customer_lastname)}</p>
+                    </div>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full ${STATUS_COLORS[o.status] || 'bg-gray-100 text-gray-600'}">${STATUS_LABELS[o.status] || o.status}</span>
+                </div>
+            `).join("");
+        }
+
+        document.getElementById("refreshBtn").addEventListener("click", loadDashboard);
+        loadDashboard();
+    </script>
+
+</body>
+</html>

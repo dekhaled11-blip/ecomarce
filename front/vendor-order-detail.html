@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم التاجر | تفاصيل الطلب #ORD-3388</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-white shadow-xl flex flex-col hidden md:flex z-20">
+        <div class="h-20 flex items-center justify-center border-b border-gray-100">
+            <h1 class="text-2xl font-bold text-blue-700">
+                <i class="fa-solid fa-store ml-2"></i>منصتي
+            </h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="vendor-dashboard.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-chart-pie w-6"></i>
+                <span class="font-medium">نظرة عامة</span>
+            </a>
+            <a href="vendor-products.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-box-open w-6"></i>
+                <span class="font-medium">المنتجات</span>
+            </a>
+            <a href="vendor-orders.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">الطلبات</span>
+                <span class="mr-auto bg-white text-blue-700 py-1 px-2 rounded-full text-xs font-bold">3</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-wallet w-6"></i>
+                <span class="font-medium">الأرباح</span>
+            </a>
+            <a href="vendor-settings.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
+                <i class="fa-solid fa-gear w-6"></i>
+                <span class="font-medium">إعدادات المتجر</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center">
+                <img id="vendorAvatar" src="https://ui-avatars.com/api/?name=أحمد&background=1d4ed8&color=fff" alt="Avatar" class="w-10 h-10 rounded-full">
+                <div class="mr-3">
+                    <p id="vendorName" class="text-sm font-bold text-gray-800">...</p>
+                    <a href="#" id="logoutBtn" class="text-xs text-red-500 hover:text-red-700 transition-colors">تسجيل الخروج</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- الشريط العلوي -->
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+            <div class="flex items-center">
+                <button class="md:hidden text-gray-500 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-bars text-2xl"></i>
+                </button>
+                <h2 class="hidden md:block text-xl font-bold text-gray-800">تفاصيل الطلب</h2>
+            </div>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- مساحة العمل القابلة للتمرير -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8">
+
+            <!-- مسار التنقل + رقم الطلب -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                <div>
+                    <nav class="text-sm text-gray-500 mb-1 flex items-center space-x-2 space-x-reverse">
+                        <a href="vendor-orders.html" class="hover:text-blue-600">الطلبات</a>
+                        <span>/</span>
+                        <span class="text-gray-800 font-bold" id="breadcrumbOrderNumber" dir="ltr">...</span>
+                    </nav>
+                    <h3 class="text-2xl font-bold text-gray-800">طلب رقم <span id="orderNumberTitle" dir="ltr">...</span></h3>
+                </div>
+                <span id="statusBadge" class="text-sm font-bold px-4 py-2 rounded-full self-start"></span>
+            </div>
+
+            <!-- حالة التحميل -->
+            <div id="loadingState" class="text-center py-16 text-gray-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3"></i>
+                <p>جارٍ تحميل تفاصيل الطلب...</p>
+            </div>
+
+            <!-- حالة الخطأ -->
+            <div id="errorState" class="hidden text-center py-16">
+                <i class="fa-solid fa-triangle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-red-600" id="errorText"></p>
+                <a href="vendor-orders.html" class="mt-4 inline-block text-sm text-blue-600 hover:underline">العودة لقائمة الطلبات</a>
+            </div>
+
+            <div id="orderContent" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- العمود الرئيسي -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- مسار حالة الطلب (Timeline) -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-bold text-lg text-gray-800 mb-6"><i class="fa-solid fa-route text-blue-600 ml-2"></i>حالة الطلب</h3>
+                        <div id="timelineContainer" class="flex items-center justify-between relative"></div>
+                    </div>
+
+                    <!-- المنتجات المطلوبة -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="border-b border-gray-100 px-6 py-4 bg-gray-50">
+                            <h3 class="font-bold text-lg text-gray-800"><i class="fa-solid fa-box-open text-blue-600 ml-2"></i>المنتجات المطلوبة</h3>
+                        </div>
+                        <div id="itemsContainer" class="divide-y divide-gray-100"></div>
+                        <div class="border-t border-gray-100 px-6 py-4 space-y-2 text-sm bg-gray-50">
+                            <div class="flex justify-between text-gray-600">
+                                <span>المجموع الفرعي</span>
+                                <span id="subtotalText">—</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>رسوم التوصيل</span>
+                                <span id="deliveryFeeText">—</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-gray-800 text-base pt-2 border-t border-gray-200">
+                                <span>المجموع الكلي</span>
+                                <span id="totalText">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- العمود الجانبي -->
+                <div class="space-y-6">
+
+                    <!-- تحديث الحالة -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4"><i class="fa-solid fa-arrows-rotate text-blue-600 ml-2"></i>تحديث الحالة</h3>
+                        <div id="statusUpdateError" class="hidden mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700"></div>
+                        <select id="statusSelect" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none mb-3">
+                            <option value="new">جديد</option>
+                            <option value="processing">قيد التجهيز</option>
+                            <option value="shipped">تم الشحن</option>
+                            <option value="delivered">تم التوصيل</option>
+                            <option value="cancelled">ملغى</option>
+                        </select>
+                        <button type="button" id="updateStatusBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg py-3 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center">
+                            <span id="updateStatusText">حفظ وإشعار الزبون</span>
+                            <i id="updateStatusSpinner" class="fa-solid fa-circle-notch fa-spin mr-2 hidden"></i>
+                        </button>
+                        <p class="text-xs text-gray-400 mt-3 text-center">سيتم إشعارك عند تحديث الحالة بنجاح</p>
+                    </div>
+
+                    <!-- بيانات الزبون -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4"><i class="fa-solid fa-user text-blue-600 ml-2"></i>بيانات الزبون</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">الاسم الكامل</span>
+                                <span id="customerName" class="font-bold text-gray-800">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">رقم الهاتف</span>
+                                <span id="customerPhone" class="font-bold text-gray-800" dir="ltr">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- بيانات التوصيل -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4"><i class="fa-solid fa-location-dot text-blue-600 ml-2"></i>بيانات التوصيل</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">طريقة التوصيل</span>
+                                <span id="deliveryTypeText" class="font-bold text-gray-800">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">الولاية</span>
+                                <span id="wilayaText" class="font-bold text-gray-800">—</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">البلدية</span>
+                                <span id="communeText" class="font-bold text-gray-800">—</span>
+                            </div>
+                            <div class="pt-2 border-t border-gray-100">
+                                <span class="text-gray-500 block mb-1">العنوان الكامل</span>
+                                <span id="fullAddressText" class="font-medium text-gray-800">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <script src="assets/api-config.js"></script>
+    <script src="assets/vendor-guard.js"></script>
+    <script>
+        const STATUS_LABELS = {
+            new: "جديد", processing: "قيد التجهيز", shipped: "تم الشحن",
+            delivered: "تم التوصيل", cancelled: "ملغى"
+        };
+        const STATUS_BADGE_COLORS = {
+            new: "bg-blue-100 text-blue-700", processing: "bg-yellow-100 text-yellow-700",
+            shipped: "bg-indigo-100 text-indigo-700", delivered: "bg-green-100 text-green-700",
+            cancelled: "bg-red-100 text-red-700"
+        };
+        // ترتيب مراحل الطلب الطبيعية (لا تشمل "ملغى" لأنها حالة استثنائية خارج المسار الخطي)
+        const TIMELINE_STEPS = [
+            { key: "new", label: "تم الاستلام", icon: "fa-check" },
+            { key: "processing", label: "قيد التجهيز", icon: "fa-box" },
+            { key: "shipped", label: "تم الشحن", icon: "fa-truck-fast" },
+            { key: "delivered", label: "تم التوصيل", icon: "fa-flag-checkered" }
+        ];
+
+        function formatDZD(amount) {
+            return new Intl.NumberFormat("ar-DZ").format(amount) + " دج";
+        }
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str || "";
+            return div.innerHTML;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get("id");
+        let currentOrder = null;
+
+        async function loadOrder() {
+            if (!orderId) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = "رقم الطلب غير محدد بالرابط";
+                document.getElementById("errorState").classList.remove("hidden");
+                return;
+            }
+
+            try {
+                const order = await apiRequest(`/api/vendor/orders/${orderId}`);
+                currentOrder = order;
+                renderOrder(order);
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("orderContent").classList.remove("hidden");
+            } catch (err) {
+                document.getElementById("loadingState").classList.add("hidden");
+                document.getElementById("errorText").textContent = err.message;
+                document.getElementById("errorState").classList.remove("hidden");
+            }
+        }
+
+        function renderOrder(order) {
+            document.title = `لوحة تحكم التاجر | تفاصيل الطلب ${order.order_number}`;
+            document.getElementById("breadcrumbOrderNumber").textContent = order.order_number;
+            document.getElementById("orderNumberTitle").textContent = order.order_number;
+
+            const badge = document.getElementById("statusBadge");
+            badge.textContent = STATUS_LABELS[order.status];
+            badge.className = `text-sm font-bold px-4 py-2 rounded-full self-start ${STATUS_BADGE_COLORS[order.status]}`;
+
+            renderTimeline(order.status);
+
+            // المنتجات
+            document.getElementById("itemsContainer").innerHTML = order.items.map(item => `
+                <div class="p-6 flex items-center gap-4">
+                    <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs flex-shrink-0">صورة</div>
+                    <div class="flex-1">
+                        <p class="font-bold text-gray-800">${escapeHtml(item.product_name)}</p>
+                        <p class="text-xs text-gray-500 mt-1">${item.selected_attributes ? escapeHtml(item.selected_attributes) + ' · ' : ''}الكمية: ${item.quantity}</p>
+                    </div>
+                    <p class="font-bold text-gray-800">${formatDZD(item.unit_price * item.quantity)}</p>
+                </div>
+            `).join("");
+
+            document.getElementById("subtotalText").textContent = formatDZD(order.subtotal);
+            document.getElementById("deliveryFeeText").textContent = formatDZD(order.delivery_fee);
+            document.getElementById("totalText").textContent = formatDZD(order.total);
+
+            // بيانات الزبون
+            document.getElementById("customerName").textContent = `${order.customer_name} ${order.customer_lastname}`;
+            document.getElementById("customerPhone").textContent = order.customer_phone;
+
+            // بيانات التوصيل
+            const deliveryIcon = order.delivery_type === "home" ? "fa-house" : "fa-truck-fast";
+            const deliveryLabel = order.delivery_type === "home" ? "التوصيل للمنزل" : "مكتب توصيل";
+            document.getElementById("deliveryTypeText").innerHTML = `<i class="fa-solid ${deliveryIcon} text-gray-400 ml-1"></i>${deliveryLabel}`;
+            document.getElementById("wilayaText").textContent = order.wilaya;
+            document.getElementById("communeText").textContent = order.commune;
+            document.getElementById("fullAddressText").textContent = order.full_address;
+
+            // مزامنة قائمة تحديث الحالة مع الحالة الفعلية
+            document.getElementById("statusSelect").value = order.status;
+        }
+
+        function renderTimeline(currentStatus) {
+            const container = document.getElementById("timelineContainer");
+
+            if (currentStatus === "cancelled") {
+                container.innerHTML = `
+                    <div class="w-full text-center py-4">
+                        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-lg mx-auto mb-2">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
+                        <p class="font-bold text-red-700">تم إلغاء هذا الطلب</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const currentIndex = TIMELINE_STEPS.findIndex(s => s.key === currentStatus);
+            const progressPct = currentIndex >= 0 ? (currentIndex / (TIMELINE_STEPS.length - 1)) * 100 : 0;
+
+            const stepsHtml = TIMELINE_STEPS.map((step, i) => {
+                const isDone = i <= currentIndex;
+                const circleClass = isDone ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-400";
+                const labelClass = isDone ? "font-bold text-gray-800" : "font-medium text-gray-400";
+                return `
+                    <div class="relative z-10 flex flex-col items-center gap-2 text-center w-1/4">
+                        <div class="w-9 h-9 rounded-full ${circleClass} flex items-center justify-center text-sm"><i class="fa-solid ${step.icon}"></i></div>
+                        <p class="text-xs ${labelClass}">${step.label}</p>
+                    </div>
+                `;
+            }).join("");
+
+            container.innerHTML = `
+                <div class="absolute top-4 right-4 left-4 h-1 bg-gray-100 z-0">
+                    <div class="h-1 bg-blue-600" style="width: ${progressPct}%"></div>
+                </div>
+                ${stepsHtml}
+            `;
+        }
+
+        document.getElementById("updateStatusBtn").addEventListener("click", async () => {
+            const newStatus = document.getElementById("statusSelect").value;
+            const btn = document.getElementById("updateStatusBtn");
+            const btnText = document.getElementById("updateStatusText");
+            const spinner = document.getElementById("updateStatusSpinner");
+            const errorBox = document.getElementById("statusUpdateError");
+
+            errorBox.classList.add("hidden");
+            btn.disabled = true;
+            btnText.textContent = "جارٍ الحفظ...";
+            spinner.classList.remove("hidden");
+
+            try {
+                await apiRequest(`/api/vendor/orders/${orderId}/status`, {
+                    method: "PUT",
+                    body: JSON.stringify({ status: newStatus })
+                });
+                await loadOrder(); // إعادة تحميل الطلب لعرض الحالة والـTimeline المحدَّثين فعلياً من قاعدة البيانات
+            } catch (err) {
+                errorBox.textContent = err.message;
+                errorBox.classList.remove("hidden");
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = "حفظ وإشعار الزبون";
+                spinner.classList.add("hidden");
+            }
+        });
+
+        loadOrder();
+    </script>
+</body>
+</html>

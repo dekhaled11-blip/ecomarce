@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل دخول التاجر | منصتي</title>
+    <!-- استدعاء Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء أيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex">
+
+    <!-- النصف الأيمن: نموذج الدخول -->
+    <div class="w-full lg:w-1/2 bg-white flex flex-col justify-center px-8 sm:px-16 md:px-24 py-12 relative z-10 shadow-2xl">
+
+        <!-- شعار المنصة -->
+        <div class="mb-8">
+            <a href="index.html" class="text-3xl font-bold text-blue-700 flex items-center">
+                <i class="fa-solid fa-store ml-2"></i>منصتي
+            </a>
+        </div>
+
+        <!-- عنوان الصفحة -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">مرحباً بعودتك 👋</h2>
+            <p class="text-gray-500">سجّل الدخول لمتابعة إدارة متجرك.</p>
+        </div>
+
+        <!-- رسالة خطأ عامة (مخفية افتراضياً) -->
+        <div id="errorBanner" class="hidden mb-5 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-start gap-2">
+            <i class="fa-solid fa-circle-exclamation mt-0.5"></i>
+            <span id="errorMessage"></span>
+        </div>
+
+        <!-- نموذج الدخول -->
+        <form id="loginForm" class="space-y-5">
+
+            <!-- البريد الإلكتروني -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fa-regular fa-envelope text-gray-400"></i>
+                    </div>
+                    <input id="email" type="email" required placeholder="example@mail.com" class="w-full bg-gray-50 border border-gray-200 rounded-lg pr-10 pl-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-left" dir="ltr">
+                </div>
+            </div>
+
+            <!-- كلمة المرور -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">كلمة المرور</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-lock text-gray-400"></i>
+                    </div>
+                    <input id="password" type="password" required placeholder="••••••••" class="w-full bg-gray-50 border border-gray-200 rounded-lg pr-10 pl-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+                <div class="text-left mt-2">
+                    <a href="#" class="text-xs text-blue-600 hover:underline">نسيت كلمة المرور؟</a>
+                </div>
+            </div>
+
+            <!-- زر الدخول -->
+            <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold rounded-lg py-3.5 hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all shadow-lg shadow-blue-500/30 flex justify-center items-center mt-4 disabled:opacity-60 disabled:cursor-not-allowed">
+                <span id="submitText">تسجيل الدخول</span>
+                <i id="submitSpinner" class="fa-solid fa-circle-notch fa-spin mr-2 hidden"></i>
+            </button>
+
+        </form>
+
+        <!-- رابط التسجيل -->
+        <p class="text-center text-gray-600 mt-8 text-sm">
+            ليس لديك متجر بعد؟ <a href="vendor-register.html" class="text-blue-600 font-bold hover:underline">أنشئ متجرك مجاناً</a>
+        </p>
+
+    </div>
+
+    <!-- النصف الأيسر: رسالة ترحيبية (يختفي في الشاشات الصغيرة) -->
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-900 relative items-center justify-center p-12 overflow-hidden text-white">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full bg-white opacity-5 blur-2xl"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-blue-400 opacity-10 blur-3xl"></div>
+
+        <div class="relative z-10 max-w-lg text-center">
+            <i class="fa-solid fa-store text-6xl text-blue-200 mb-6"></i>
+            <h2 class="text-4xl font-extrabold leading-tight mb-6">متجرك ينتظرك</h2>
+            <p class="text-blue-100 text-lg leading-relaxed">
+                تابع طلباتك، أضف منتجات جديدة، وراقب أرباحك — كل هذا بلوحة تحكم واحدة بسيطة وسريعة.
+            </p>
+        </div>
+    </div>
+
+    <script src="assets/api-config.js"></script>
+    <script>
+        const form = document.getElementById("loginForm");
+        const errorBanner = document.getElementById("errorBanner");
+        const errorMessage = document.getElementById("errorMessage");
+        const submitBtn = document.getElementById("submitBtn");
+        const submitText = document.getElementById("submitText");
+        const submitSpinner = document.getElementById("submitSpinner");
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBanner.classList.remove("hidden");
+        }
+        function hideError() {
+            errorBanner.classList.add("hidden");
+        }
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            submitText.textContent = isLoading ? "جارٍ تسجيل الدخول..." : "تسجيل الدخول";
+            submitSpinner.classList.toggle("hidden", !isLoading);
+        }
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            hideError();
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            if (!email || !password) {
+                showError("يرجى إدخال البريد الإلكتروني وكلمة المرور");
+                return;
+            }
+
+            setLoading(true);
+            try {
+                const data = await apiRequest("/api/vendors/login", {
+                    method: "POST",
+                    body: JSON.stringify({ email, password })
+                });
+
+                // تخزين رمز الدخول وبيانات التاجر الأساسية لاستخدامها بباقي صفحات لوحة التحكم
+                localStorage.setItem("vendor_token", data.token);
+                localStorage.setItem("vendor_info", JSON.stringify(data.vendor));
+
+                window.location.href = "vendor-products.html";
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        });
+    </script>
+
+</body>
+</html>
