@@ -1,0 +1,39 @@
+name = "platform-api"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+# قاعدة البيانات D1
+[[d1_databases]]
+binding = "DB"
+database_name = "platform-db"
+database_id = "9539c1b2-b3ff-450b-bd6d-27bbd958deb7"
+
+# مساحة تخزين الصور (Cloudflare R2) — صور المنتجات وإثباتات الدفع
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "platform-images"
+
+# مساحة KV لحماية Rate Limiting على مسارات تسجيل الدخول (تاجر + مشرف)
+# أنشئها أولاً بالأمر: wrangler kv namespace create RATE_LIMIT_KV
+# ثم ضع الـ id الذي يرجعه الأمر هنا بدل السطر الوهمي أدناه
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "052cac41ff5548589ba3d04daf7cd4ba"
+
+[vars]
+# الرابط العام لعرض الصور بعد ربط نطاق مخصص أو Public Development URL بالـ R2 bucket
+R2_PUBLIC_URL = "https://pub-07edad6197f3466f9c10e85f04abc465.r2.dev"
+
+# نطاقات الواجهة الأمامية المسموح لها بالاتصال بهذا الـAPI (مفصولة بفاصلة، بدون مسافة بعدها لو أكثر من واحد)
+# مثال: "https://mysite.com,https://www.mysite.com"
+# اتركه فارغاً مؤقتاً أثناء التطوير المحلي — لن يُقبل أي طلب من متصفح حتى تحدّده (رفض افتراضي آمن)
+ALLOWED_ORIGINS = "ضع-هنا-نطاقات-موقعك-الحقيقية-مفصولة-بفاصلة"
+
+# مهمة مجدولة يومية (الساعة 8 صباحاً UTC) لفحص التجارب/الاشتراكات القاربة على الانتهاء
+[triggers]
+crons = ["0 8 * * *"]
+
+# متغير سري لتوقيع رموز JWT — لا يوضع هنا مباشرة، بل عبر الأمر التالي:
+# wrangler secret put JWT_SECRET
+# wrangler secret put ADMIN_SETUP_KEY
+
