@@ -2,7 +2,7 @@
 // إعدادات الاتصال بالـ API — ملف مشترك تستدعيه كل صفحات الموقع
 // عدّل الرابط أدناه مرة واحدة فقط بعد نشر الـ Worker، وسيعمل بكل الصفحات تلقائياً
 // ============================================
-const API_BASE_URL = "https://platform-api.YOUR_SUBDOMAIN.workers.dev";
+const API_BASE_URL = "https://platform-api.brah73927.workers.dev";
 
 // دالة مساعدة موحّدة لكل نداءات الـ API — تتعامل مع رمز الدخول (JWT) والأخطاء بشكل متسق
 async function apiRequest(path, options = {}) {
