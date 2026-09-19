@@ -43,8 +43,8 @@
             </a>
             <a href="admin-activation-queue.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <i class="fa-solid fa-credit-card w-6"></i>
-                <span class="font-medium">الاشتراكات والمدفوعات</span>
-                <span class="mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold">4</span>
+                <span class="font-medium">طلبات التفعيل</span>
+                <span id="sidebarPendingActivationBadge" class="hidden mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold"></span>
             </a>
             <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <i class="fa-solid fa-cart-shopping w-6"></i>
@@ -201,6 +201,7 @@
     </main>
 
     <script src="assets/api-config.js"></script>
+    <script src="assets/sidebar-badges.js"></script>
     <script src="assets/admin-guard.js"></script>
     <script>
         const STATUS_LABELS = {

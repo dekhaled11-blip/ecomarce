@@ -29,7 +29,9 @@
                 <i class="fa-solid fa-box-open w-6"></i><span class="font-medium">المنتجات</span>
             </a>
             <a href="vendor-orders.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
-                <i class="fa-solid fa-cart-shopping w-6"></i><span class="font-medium">الطلبات</span>
+                <i class="fa-solid fa-cart-shopping w-6"></i>
+                <span class="font-medium">الطلبات</span>
+                <span id="sidebarNewOrdersBadge" class="hidden mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold"></span>
             </a>
             <a href="vendor-notifications.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
                 <i class="fa-solid fa-bell w-6"></i><span class="font-medium">الإشعارات</span>
@@ -95,6 +97,7 @@
     </main>
 
     <script src="assets/api-config.js"></script>
+    <script src="assets/sidebar-badges.js"></script>
     <script>
         // حماية الصفحة: لا وصول بدون تسجيل دخول تاجر
         if (!localStorage.getItem("vendor_token")) {

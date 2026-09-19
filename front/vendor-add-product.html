@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- استدعاء أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- مكتبة معاينة وقص الصور قبل الرفع -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <style>
         /* تخصيص الخط العربي الاحترافي */
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
@@ -44,7 +47,7 @@
             <a href="vendor-orders.html" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <i class="fa-solid fa-cart-shopping w-6"></i>
                 <span class="font-medium">الطلبات</span>
-                <span class="mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold">3</span>
+                <span id="sidebarNewOrdersBadge" class="hidden mr-auto bg-red-100 text-red-600 py-1 px-2 rounded-full text-xs font-bold"></span>
             </a>
             <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <i class="fa-solid fa-wallet w-6"></i>
@@ -87,11 +90,11 @@
                     <i class="fa-solid fa-search absolute right-4 top-2.5 text-gray-400"></i>
                 </div>
                 <!-- التنبيهات -->
-                <button class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                <a href="vendor-notifications.html" class="relative p-2 text-gray-400 hover:text-blue-600 transition-colors">
                     <i class="fa-regular fa-bell text-xl"></i>
-                    <span class="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
-                <a href="store.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                    <span id="headerNotifBadge" class="hidden absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </a>
+                <a href="store.html" id="viewStoreLink" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium transition-colors">
                     <i class="fa-solid fa-eye ml-1"></i> عرض متجري
                 </a>
             </div>
@@ -604,7 +607,31 @@
         }
     </script>
 
+    <!-- نافذة معاينة وقص الصورة قبل الرفع الفعلي -->
+    <div id="cropperModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h4 class="font-bold text-gray-800"><i class="fa-solid fa-crop-simple text-blue-600 ml-2"></i>معاينة وقص الصورة</h4>
+                <span id="cropperProgressText" class="text-xs text-gray-400"></span>
+            </div>
+            <div class="p-4">
+                <div style="max-height: 60vh; overflow: hidden;">
+                    <img id="cropperImage" class="block max-w-full">
+                </div>
+                <p class="text-xs text-gray-400 mt-3 text-center">
+                    <i class="fa-solid fa-arrows-up-down-left-right ml-1"></i>
+                    حرّك وكبّر/صغّر الصورة لاختيار الجزء الظاهر بمربع (نفس مقاس بطاقة المنتج بالموقع)
+                </p>
+            </div>
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between gap-3">
+                <button type="button" id="cropperCancelBtn" class="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2.5 rounded-lg text-sm transition-colors">تخطي هذه الصورة</button>
+                <button type="button" id="cropperConfirmBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-sm transition-colors"><i class="fa-solid fa-check ml-1"></i> تأكيد واستخدام هذا القص</button>
+            </div>
+        </div>
+    </div>
+
     <script src="assets/api-config.js"></script>
+    <script src="assets/sidebar-badges.js"></script>
     <script src="assets/vendor-guard.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -659,9 +686,16 @@
             document.getElementById("imageFileInput").click();
         });
 
-        document.getElementById("imageFileInput").addEventListener("change", async (e) => {
+        // ============================================
+        // معاينة وقص الصور قبل الرفع — مربع 1:1 موحّد لكل صور المنتجات
+        // (Cropper.js يشتغل بالكامل بمتصفح التاجر، بدون أي تعديل على upload.js بالخادم)
+        // ============================================
+        let cropperInstance = null;
+        let cropQueue = [];
+        let cropQueueTotal = 0;
+
+        document.getElementById("imageFileInput").addEventListener("change", (e) => {
             const files = [...e.target.files];
-            const statusEl = document.getElementById("imageUploadStatus");
             const errorEl = document.getElementById("imageUploadError");
             errorEl.classList.add("hidden");
 
@@ -672,34 +706,93 @@
                 files.length = remainingSlots;
             }
 
-            for (const file of files) {
-                statusEl.textContent = `جارٍ رفع ${file.name}...`;
-                statusEl.classList.remove("hidden");
-                try {
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    const result = await apiRequest("/api/vendors/upload-image", { method: "POST", body: formData });
-
-                    if (isEditMode) {
-                        // بوضع التعديل: المنتج موجود أصلاً بقاعدة البيانات، فنربط الصورة به فوراً
-                        const attachResult = await apiRequest(`/api/products/${productId}/images`, {
-                            method: "POST",
-                            body: JSON.stringify({ image_url: result.url })
-                        });
-                        uploadedImages.push({ id: attachResult.id, url: result.url });
-                    } else {
-                        // بوضع الإنشاء: المنتج غير موجود بعد، فنحتفظ بالرابط محلياً ونرسله عند الحفظ النهائي
-                        uploadedImages.push({ url: result.url });
-                    }
-                    renderImagePreviews();
-                } catch (err) {
-                    errorEl.textContent = `فشل رفع ${file.name}: ${err.message}`;
-                    errorEl.classList.remove("hidden");
-                }
-            }
-            statusEl.classList.add("hidden");
             e.target.value = ""; // السماح برفع نفس الملف مرة أخرى لاحقاً لو احتاج المستخدم
+            if (files.length === 0) return;
+
+            cropQueue = files;
+            cropQueueTotal = files.length;
+            processNextInCropQueue();
         });
+
+        function processNextInCropQueue() {
+            if (cropQueue.length === 0) return;
+            const file = cropQueue.shift();
+            const reader = new FileReader();
+            reader.onload = (ev) => openCropperModal(ev.target.result);
+            reader.readAsDataURL(file);
+        }
+
+        function openCropperModal(dataUrl) {
+            const modal = document.getElementById("cropperModal");
+            const img = document.getElementById("cropperImage");
+            const currentIndex = cropQueueTotal - cropQueue.length;
+            document.getElementById("cropperProgressText").textContent = cropQueueTotal > 1 ? `صورة ${currentIndex} من ${cropQueueTotal}` : "";
+
+            img.src = dataUrl;
+            modal.classList.remove("hidden");
+
+            if (cropperInstance) cropperInstance.destroy();
+            cropperInstance = new Cropper(img, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+                background: false,
+                responsive: true
+            });
+        }
+
+        function closeCropperModal() {
+            document.getElementById("cropperModal").classList.add("hidden");
+            if (cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+        }
+
+        document.getElementById("cropperCancelBtn").addEventListener("click", () => {
+            closeCropperModal();
+            processNextInCropQueue(); // تخطي هذه الصورة والانتقال للتالية بالطابور
+        });
+
+        document.getElementById("cropperConfirmBtn").addEventListener("click", () => {
+            if (!cropperInstance) return;
+            cropperInstance.getCroppedCanvas({ width: 1080, height: 1080, imageSmoothingQuality: "high" })
+                .toBlob(async (blob) => {
+                    closeCropperModal();
+                    await uploadCroppedImage(blob);
+                    processNextInCropQueue();
+                }, "image/jpeg", 0.9);
+        });
+
+        async function uploadCroppedImage(blob) {
+            const statusEl = document.getElementById("imageUploadStatus");
+            const errorEl = document.getElementById("imageUploadError");
+            statusEl.textContent = "جارٍ رفع الصورة...";
+            statusEl.classList.remove("hidden");
+            try {
+                const formData = new FormData();
+                formData.append("file", blob, "product-image.jpg");
+                const result = await apiRequest("/api/vendors/upload-image", { method: "POST", body: formData });
+
+                if (isEditMode) {
+                    // بوضع التعديل: المنتج موجود أصلاً بقاعدة البيانات، فنربط الصورة به فوراً
+                    const attachResult = await apiRequest(`/api/products/${productId}/images`, {
+                        method: "POST",
+                        body: JSON.stringify({ image_url: result.url })
+                    });
+                    uploadedImages.push({ id: attachResult.id, url: result.url });
+                } else {
+                    // بوضع الإنشاء: المنتج غير موجود بعد، فنحتفظ بالرابط محلياً ونرسله عند الحفظ النهائي
+                    uploadedImages.push({ url: result.url });
+                }
+                renderImagePreviews();
+            } catch (err) {
+                errorEl.textContent = `فشل رفع الصورة: ${err.message}`;
+                errorEl.classList.remove("hidden");
+            } finally {
+                statusEl.classList.add("hidden");
+            }
+        }
 
         async function loadProductForEdit() {
             document.getElementById("formWrapper").classList.add("hidden");

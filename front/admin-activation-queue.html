@@ -38,7 +38,7 @@
             <a href="admin-activation-queue.html" class="flex items-center px-4 py-3 bg-blue-600 text-white rounded-lg shadow-md transition-colors">
                 <i class="fa-solid fa-credit-card w-6"></i>
                 <span class="font-medium">طلبات التفعيل</span>
-                <span class="mr-auto bg-white text-blue-700 py-1 px-2 rounded-full text-xs font-bold">4</span>
+                <span id="sidebarPendingActivationBadge" class="hidden mr-auto bg-white text-blue-700 py-1 px-2 rounded-full text-xs font-bold"></span>
             </a>
             <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-colors">
                 <i class="fa-solid fa-cart-shopping w-6"></i>
@@ -148,6 +148,7 @@
     </main>
 
     <script src="assets/api-config.js"></script>
+    <script src="assets/sidebar-badges.js"></script>
     <script src="assets/admin-guard.js"></script>
     <script>
         const AVATAR_COLORS = ["1d4ed8", "e11d48", "047857", "a21caf", "b45309"];
