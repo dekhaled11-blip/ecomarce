@@ -11,6 +11,24 @@ function jsonResponse(data, status = 200) {
 }
 
 // ---------------------------------------------
+// GET /api/vendor/badges — عدد الطلبات الجديدة + عدد الإشعارات غير المقروءة، باستعلام D1 واحد فقط
+// (subqueries بدل استعلامين منفصلين) — مخصص لشارات السايدبار وجرس الهيدر بكل صفحات لوحة التاجر.
+// الواجهة الأمامية تخزّن النتيجة مؤقتاً (Cache) لتقليل تكرار الاستدعاء — راجع sidebar-badges.js
+// ---------------------------------------------
+export async function handleGetVendorBadgeCounts(request, env, auth) {
+    const row = await env.DB.prepare(`
+        SELECT
+            (SELECT COUNT(*) FROM orders WHERE vendor_id = ? AND status = 'new') as new_orders,
+            (SELECT COUNT(*) FROM notifications WHERE vendor_id = ? AND is_read = 0) as unread_notifications
+    `).bind(auth.vendor_id, auth.vendor_id).first();
+
+    return jsonResponse({
+        new_orders: row.new_orders || 0,
+        unread_notifications: row.unread_notifications || 0
+    });
+}
+
+// ---------------------------------------------
 // GET /api/vendor/dashboard-stats — كل أرقام النظرة العامة بـ4 استعلامات فقط
 // ---------------------------------------------
 export async function handleDashboardStats(request, env, auth) {

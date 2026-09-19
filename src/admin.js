@@ -157,6 +157,19 @@ export async function handleGetVendor(request, env, vendorId) {
 }
 
 // ---------------------------------------------
+// GET /api/admin/vendors/pending-count — عدد التجار بانتظار تفعيل الحساب فقط (محمي)
+// استعلام واحد خفيف جداً (COUNT بسيط)، مخصص لشارة السايدبار — عمداً منفصل عن
+// handleActivationQueue الأثقل (JOIN كامل + بيانات كل تاجر ودفعته). الواجهة الأمامية
+// تخزّن النتيجة مؤقتاً (Cache) لتقليل تكرار الاستدعاء — راجع sidebar-badges.js
+// ---------------------------------------------
+export async function handleGetPendingActivationCount(request, env) {
+    const row = await env.DB.prepare(
+        "SELECT COUNT(*) as count FROM vendors WHERE status = 'pending_payment'"
+    ).first();
+    return jsonResponse({ count: row.count || 0 });
+}
+
+// ---------------------------------------------
 // GET /api/admin/activation-queue — التجار الذين ينتظرون تفعيل الحساب بعد الدفع
 // ---------------------------------------------
 export async function handleActivationQueue(request, env) {

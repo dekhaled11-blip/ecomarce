@@ -5,7 +5,8 @@ import { handleRegister, handleLogin } from "./vendors.js";
 import { authenticateVendor, authenticateAdmin } from "./middleware.js";
 import {
     handleAdminSetup, handleAdminLogin, handleListVendors, handleGetVendor,
-    handleActivationQueue, handleActivateVendor, handleSuspendVendor, handleRejectPayment, handleSendPaymentReminder, handleExtendTrial
+    handleActivationQueue, handleActivateVendor, handleSuspendVendor, handleRejectPayment, handleSendPaymentReminder, handleExtendTrial,
+    handleGetPendingActivationCount
 } from "./admin.js";
 import {
     handlePublicListVendors, handlePublicGetVendor, handlePublicListVendorProducts,
@@ -23,7 +24,7 @@ import {
 } from "./notifications.js";
 import { handleListWilayas } from "./locations.js";
 import { runScheduledChecks } from "./scheduled.js";
-import { handleDashboardStats } from "./dashboard.js";
+import { handleDashboardStats, handleGetVendorBadgeCounts } from "./dashboard.js";
 import { handleGetSettings, handleUpdateSettings } from "./settings.js";
 import {
     handleCreateOrder, handleTrackOrder, handleListVendorOrders,
@@ -158,6 +159,18 @@ export default {
                 return withCORS(await handleDashboardStats(request, env, auth));
             }
 
+            // ---- مسار شارات السايدبار/الهيدر الموحّد (محمي) — استعلام واحد بدل مسارين منفصلين ----
+            if (pathname === "/api/vendor/badges" && request.method === "GET") {
+                const auth = await authenticateVendor(request, env);
+                if (!auth) {
+                    return withCORS(new Response(
+                        JSON.stringify({ error: "غير مصرّح. يرجى تسجيل الدخول." }),
+                        { status: 401, headers: { "Content-Type": "application/json" } }
+                    ));
+                }
+                return withCORS(await handleGetVendorBadgeCounts(request, env, auth));
+            }
+
             // ---- مسارات إشعارات التاجر (محمية) ----
             const notificationReadMatch = pathname.match(/^\/api\/vendor\/notifications\/(\d+)\/read$/);
 
@@ -270,9 +283,11 @@ export default {
             const adminRejectPaymentMatch = pathname.match(/^\/api\/admin\/vendors\/(\d+)\/reject-payment$/);
             const adminRemindMatch = pathname.match(/^\/api\/admin\/vendors\/(\d+)\/remind$/);
             const adminExtendTrialMatch = pathname.match(/^\/api\/admin\/vendors\/(\d+)\/extend-trial$/);
+            const adminPendingCountMatch = pathname === "/api/admin/vendors/pending-count";
 
             const isAdminRoute = pathname === "/api/admin/vendors" || pathname === "/api/admin/activation-queue"
-                || adminVendorIdMatch || adminActivateMatch || adminSuspendMatch || adminRejectPaymentMatch || adminRemindMatch || adminExtendTrialMatch;
+                || adminVendorIdMatch || adminActivateMatch || adminSuspendMatch || adminRejectPaymentMatch || adminRemindMatch || adminExtendTrialMatch
+                || adminPendingCountMatch;
 
             if (isAdminRoute) {
                 const auth = await authenticateAdmin(request, env);
@@ -288,6 +303,9 @@ export default {
                 }
                 if (pathname === "/api/admin/activation-queue" && request.method === "GET") {
                     return withCORS(await handleActivationQueue(request, env));
+                }
+                if (adminPendingCountMatch && request.method === "GET") {
+                    return withCORS(await handleGetPendingActivationCount(request, env));
                 }
                 if (adminVendorIdMatch && request.method === "GET") {
                     return withCORS(await handleGetVendor(request, env, adminVendorIdMatch[1]));
