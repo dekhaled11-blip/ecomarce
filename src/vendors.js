@@ -120,7 +120,7 @@ export async function handleLogin(request, env) {
     }
 
     const vendor = await env.DB.prepare(
-        "SELECT id, store_name, password_hash, status, trial_ends_at FROM vendors WHERE email = ?"
+        "SELECT id, store_name, password_hash, status, trial_ends_at, logo_url FROM vendors WHERE email = ?"
     ).bind(normalizedEmail).first();
 
     // رسالة خطأ عامة وموحّدة سواء كان البريد غير موجود أو كلمة المرور خاطئة
@@ -149,7 +149,8 @@ export async function handleLogin(request, env) {
             id: vendor.id,
             store_name: vendor.store_name,
             status: vendor.status,
-            trial_ends_at: vendor.trial_ends_at
+            trial_ends_at: vendor.trial_ends_at,
+            logo_url: vendor.logo_url
         }
     });
 }
