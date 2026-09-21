@@ -193,7 +193,7 @@ export async function handlePublicGetProduct(request, env, productId) {
 
     const product = await env.DB.prepare(`
         SELECT p.id, p.name, p.description, p.category, p.price, COALESCE(p.display_price, p.price) as display_price,
-               p.compare_at_price, p.quantity, p.custom_fields,
+               p.compare_at_price, p.quantity, p.custom_fields, p.direct_checkout_only,
                v.id as vendor_id, v.store_name as vendor_name, v.phone as vendor_phone
         FROM products p
         JOIN vendors v ON v.id = p.vendor_id

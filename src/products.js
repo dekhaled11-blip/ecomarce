@@ -96,7 +96,7 @@ export async function handleCreateProduct(request, env, auth) {
         return jsonResponse({ error: "بيانات الطلب غير صالحة" }, 400);
     }
 
-    const { name, description, category, price, compare_at_price, sku, quantity, images, attributes, status, variants, custom_fields } = body;
+    const { name, description, category, price, compare_at_price, sku, quantity, images, attributes, status, variants, custom_fields, direct_checkout_only } = body;
 
     // ---- التحقق من صحة المدخلات ----
     if (!name || name.trim().length < 2) {
@@ -138,13 +138,14 @@ export async function handleCreateProduct(request, env, auth) {
     // نستعمل env.DB.batch بدل استعلامات منفصلة متتالية لتقليل عدد الرحلات (round-trips) لقاعدة البيانات
     const initialStatus = status === "published" ? "published" : "draft";
     const insertProduct = env.DB.prepare(
-        `INSERT INTO products (vendor_id, name, description, category, price, compare_at_price, sku, quantity, status, display_price, custom_fields)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO products (vendor_id, name, description, category, price, compare_at_price, sku, quantity, status, display_price, custom_fields, direct_checkout_only)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
         auth.vendor_id, name.trim(), description?.trim() || null, category,
         priceNum, compare_at_price ? Number(compare_at_price) : null,
         sku?.trim() || null, quantityNum, initialStatus, displayPrice,
-        custom_fields ? JSON.stringify(custom_fields) : null
+        custom_fields ? JSON.stringify(custom_fields) : null,
+        direct_checkout_only ? 1 : 0
     );
 
     const productResult = await insertProduct.run();
@@ -268,7 +269,7 @@ export async function handleUpdateProduct(request, env, auth, productId) {
         return jsonResponse({ error: "بيانات الطلب غير صالحة" }, 400);
     }
 
-    const { name, description, category, price, compare_at_price, sku, quantity, status, variants, custom_fields } = body;
+    const { name, description, category, price, compare_at_price, sku, quantity, status, variants, custom_fields, direct_checkout_only } = body;
 
     if (category && !ALLOWED_CATEGORIES.includes(category)) {
         return jsonResponse({ error: "القسم غير صالح" }, 400);
@@ -303,6 +304,11 @@ export async function handleUpdateProduct(request, env, auth, productId) {
     if (custom_fields !== undefined) {
         fields.push("custom_fields = ?");
         values.push(JSON.stringify(custom_fields));
+    }
+    // مثل custom_fields أعلاه: قيمة منطقية صريحة (0 أو 1)، تُحدَّث فقط لو أُرسلت فعلاً بهذا الطلب
+    if (direct_checkout_only !== undefined) {
+        fields.push("direct_checkout_only = ?");
+        values.push(direct_checkout_only ? 1 : 0);
     }
     // display_price يُعاد حسابه فقط لو أُرسلت مصفوفة متغيرات بهذا الطلب تحديداً (بدون أي قراءة إضافية، من نفس البيانات المُرسَلة)
     if (variants !== undefined) {
