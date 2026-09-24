@@ -3,6 +3,11 @@
 // ============================================
 
 import { createNotification } from "./notifications.js";
+import { WILAYAS } from "./locations.js";
+
+// خريطة اسم الولاية → رمزها — الواجهة الأمامية ترسل الاسم (لعرضه بتفاصيل الطلب)، لكن جدول
+// vendor_delivery_rates يُفهرَس بالرمز؛ هذا التحويل بالذاكرة فقط، صفر استعلام قاعدة بيانات إضافي
+const WILAYA_NAME_TO_CODE = new Map(WILAYAS.map(w => [w.name, w.code]));
 
 function jsonResponse(data, status = 200) {
     return new Response(JSON.stringify(data), {
@@ -11,7 +16,7 @@ function jsonResponse(data, status = 200) {
     });
 }
 
-const DELIVERY_FEES = { home: 500, office: 300 }; // دج — يمكن لاحقاً ربطها بإعدادات كل تاجر
+const VALID_DELIVERY_TYPES = new Set(["home", "office"]); // القيم المسموحة فقط؛ السعر نفسه صار ديناميكياً لكل تاجر (راجع أسفل)
 const ORDER_STATUSES = ["new", "processing", "shipped", "delivered", "cancelled"];
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 50;
@@ -47,7 +52,7 @@ export async function handleCreateOrder(request, env) {
     if (!wilaya || !commune || !full_address) {
         return jsonResponse({ error: "بيانات العنوان غير مكتملة (الولاية، البلدية، العنوان الكامل)" }, 400);
     }
-    if (!delivery_type || !DELIVERY_FEES.hasOwnProperty(delivery_type)) {
+    if (!delivery_type || !VALID_DELIVERY_TYPES.has(delivery_type)) {
         return jsonResponse({ error: "طريقة التوصيل غير صالحة" }, 400);
     }
     if (!Array.isArray(items) || items.length === 0) {
@@ -60,8 +65,10 @@ export async function handleCreateOrder(request, env) {
     }
 
     // ---- التحقق من التاجر (يجب أن يكون نشطاً ليستقبل طلبات) ----
-    const vendor = await env.DB.prepare("SELECT id, status FROM vendors WHERE id = ?")
-        .bind(vendor_id).first();
+    // نجلب الأسعار الافتراضية بنفس هذا الاستعلام (صفر تكلفة إضافية — نفس الصف المقروء أصلاً)
+    const vendor = await env.DB.prepare(
+        "SELECT id, status, default_home_delivery_fee, default_office_delivery_fee FROM vendors WHERE id = ?"
+    ).bind(vendor_id).first();
     if (!vendor) return jsonResponse({ error: "المتجر غير موجود" }, 404);
     if (vendor.status === "suspended") {
         return jsonResponse({ error: "هذا المتجر غير متاح حالياً لاستقبال الطلبات" }, 403);
@@ -136,7 +143,19 @@ export async function handleCreateOrder(request, env) {
         }
     }
 
-    const deliveryFee = DELIVERY_FEES[delivery_type];
+    // ---- حساب رسم التوصيل الفعلي: استثناء مخصّص لهذي الولاية إن وُجد (استعلام واحد مفهرس)،
+    // وإلا الأسعار الافتراضية الخاصة بهذا التاجر (مجلوبة أصلاً أعلاه بدون تكلفة إضافية) ----
+    const wilayaCode = WILAYA_NAME_TO_CODE.get(wilaya) || null;
+    const rateException = wilayaCode
+        ? await env.DB.prepare(
+            "SELECT home_price, office_price FROM vendor_delivery_rates WHERE vendor_id = ? AND wilaya_code = ?"
+          ).bind(vendor_id, wilayaCode).first()
+        : null;
+
+    const deliveryFee = rateException
+        ? (delivery_type === "home" ? rateException.home_price : rateException.office_price)
+        : (delivery_type === "home" ? vendor.default_home_delivery_fee : vendor.default_office_delivery_fee);
+
     const total = subtotal + deliveryFee;
 
     // ---- إنشاء رقم طلب فريد (إعادة محاولة واحدة نادراً عند التصادم) ----

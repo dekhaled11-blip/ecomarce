@@ -38,11 +38,28 @@ function jsonResponse(data, status = 200) {
 }
 
 // ---------------------------------------------
+// GET /api/public/communes?wilaya=XX — بلديات ولاية معينة (عامة، بدون تسجيل دخول)
+// استعلام واحد مفهرس فقط (idx_communes_wilaya) — خفيف جداً، ونفس رأس التخزين المؤقت
+// المستخدم بالولايات (بيانات شبه ثابتة، تتغيّر نادراً جداً)
+// ---------------------------------------------
+export async function handleListCommunes(request, env) {
+    const url = new URL(request.url);
+    const wilayaCode = url.searchParams.get("wilaya");
+
+    if (!wilayaCode) {
+        return jsonResponse({ error: "يرجى تحديد رمز الولاية" }, 400);
+    }
+
+    const { results } = await env.DB.prepare(
+        "SELECT id, name FROM communes WHERE wilaya_code = ? ORDER BY name"
+    ).bind(wilayaCode).all();
+
+    return jsonResponse({ communes: results });
+}
+
+// ---------------------------------------------
 // GET /api/public/wilayas — قائمة الولايات (عامة، بدون تسجيل دخول)
 // ---------------------------------------------
 export async function handleListWilayas(request, env) {
-    return jsonResponse({
-        wilayas: WILAYAS,
-        note: "قائمة البلديات لكل ولاية غير متوفرة بعد — سيتم إضافتها لاحقاً من مصدر رسمي"
-    });
+    return jsonResponse({ wilayas: WILAYAS });
 }

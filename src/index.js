@@ -22,7 +22,8 @@ import {
     createNotification, handleListNotifications,
     handleMarkNotificationRead, handleMarkAllNotificationsRead
 } from "./notifications.js";
-import { handleListWilayas } from "./locations.js";
+import { handleListWilayas, handleListCommunes } from "./locations.js";
+import { handleGetDeliveryRates, handleUpdateDeliveryRates } from "./delivery.js";
 import { runScheduledChecks } from "./scheduled.js";
 import { handleDashboardStats, handleGetVendorBadgeCounts } from "./dashboard.js";
 import { handleGetSettings, handleUpdateSettings } from "./settings.js";
@@ -129,6 +130,9 @@ export default {
             if (pathname === "/api/public/wilayas" && request.method === "GET") {
                 return withCORS(await handleListWilayas(request, env));
             }
+            if (pathname === "/api/public/communes" && request.method === "GET") {
+                return withCORS(await handleListCommunes(request, env));
+            }
 
             // ---- مسار إعدادات المتجر (محمي) ----
             if (pathname === "/api/vendor/settings") {
@@ -144,6 +148,23 @@ export default {
                 }
                 if (request.method === "PUT") {
                     return withCORS(await handleUpdateSettings(request, env, auth));
+                }
+            }
+
+            // ---- مسار أسعار التوصيل لكل تاجر (محمي) ----
+            if (pathname === "/api/vendor/delivery-rates") {
+                const auth = await authenticateVendor(request, env);
+                if (!auth) {
+                    return withCORS(new Response(
+                        JSON.stringify({ error: "غير مصرّح. يرجى تسجيل الدخول." }),
+                        { status: 401, headers: { "Content-Type": "application/json" } }
+                    ));
+                }
+                if (request.method === "GET") {
+                    return withCORS(await handleGetDeliveryRates(request, env, auth));
+                }
+                if (request.method === "PUT") {
+                    return withCORS(await handleUpdateDeliveryRates(request, env, auth));
                 }
             }
 
