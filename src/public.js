@@ -191,10 +191,13 @@ export async function handlePublicListProducts(request, env) {
 export async function handlePublicGetProduct(request, env, productId) {
     const statusPlaceholders = PUBLIC_VENDOR_STATUSES.map(() => "?").join(",");
 
+    // نضمّ سعري التوصيل الافتراضيين للتاجر بنفس هذا الاستعلام (نفس الصف المقروء أصلاً عبر JOIN، صفر تكلفة إضافية)
+    // هذا يسمح للواجهة الأمامية بعرض سعر توصيل صحيح فوراً دون أي طلب شبكة إضافي، قبل أن يختار الزبون ولايته
     const product = await env.DB.prepare(`
         SELECT p.id, p.name, p.description, p.category, p.price, COALESCE(p.display_price, p.price) as display_price,
                p.compare_at_price, p.quantity, p.custom_fields, p.direct_checkout_only,
-               v.id as vendor_id, v.store_name as vendor_name, v.phone as vendor_phone
+               v.id as vendor_id, v.store_name as vendor_name, v.phone as vendor_phone,
+               v.default_home_delivery_fee, v.default_office_delivery_fee
         FROM products p
         JOIN vendors v ON v.id = p.vendor_id
         WHERE p.id = ? AND p.status = 'published' AND p.deleted_at IS NULL AND v.status IN (${statusPlaceholders})
@@ -223,4 +226,36 @@ export async function handlePublicGetProduct(request, env, productId) {
         attributes: attributes.results,
         variants: variants.results
     });
+}
+
+// ---------------------------------------------
+// GET /api/public/vendors/:id/delivery-fee?wilaya=رمز_الولاية — سعر التوصيل الفعلي لهذا التاجر
+// يُستخدم من صفحتي المنتج (نافذة الطلب المباشر) والسلة/الدفع، بدل أي رقم ثابت بالواجهة الأمامية
+// ---------------------------------------------
+export async function handlePublicGetDeliveryFee(request, env, identifier) {
+    const url = new URL(request.url);
+    // رمز ولاية غير صالح (طول مختلف عن 2، أو فارغ) يُعامَل كعدم اختيار ولاية إطلاقاً — نرجع للسعر الافتراضي بأمان
+    const rawWilaya = url.searchParams.get("wilaya") || "";
+    const wilayaCode = /^\d{2}$/.test(rawWilaya) ? rawWilaya : "";
+
+    const statusPlaceholders = PUBLIC_VENDOR_STATUSES.map(() => "?").join(",");
+    const isNumeric = /^\d+$/.test(identifier);
+    const column = isNumeric ? "v.id" : "v.slug";
+
+    // استعلام واحد فقط: LEFT JOIN مع استثناء هذه الولاية تحديداً (إن وُجد)، وCOALESCE يرجع تلقائياً
+    // للسعر الافتراضي لو لم يوجد استثناء — أو لو لم تُحدَّد ولاية أصلاً (wilayaCode فارغ فلن يطابق أي صف بالـJOIN)
+    // نفس الاستعلام بالضبط للحالتين، بدون أي تفرّع بالكود. مفهرس بالكامل عبر PRIMARY KEY(vendor_id, wilaya_code)
+    const row = await env.DB.prepare(`
+        SELECT COALESCE(r.home_price, v.default_home_delivery_fee) as home,
+               COALESCE(r.office_price, v.default_office_delivery_fee) as office
+        FROM vendors v
+        LEFT JOIN vendor_delivery_rates r ON r.vendor_id = v.id AND r.wilaya_code = ?
+        WHERE ${column} = ? AND v.status IN (${statusPlaceholders})
+    `).bind(wilayaCode, identifier, ...PUBLIC_VENDOR_STATUSES).first();
+
+    if (!row) {
+        return jsonResponse({ error: "المتجر غير موجود أو غير متاح حالياً" }, 404);
+    }
+
+    return jsonResponse({ home: row.home, office: row.office });
 }

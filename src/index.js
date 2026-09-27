@@ -10,7 +10,7 @@ import {
 } from "./admin.js";
 import {
     handlePublicListVendors, handlePublicGetVendor, handlePublicListVendorProducts,
-    handlePublicListProducts, handlePublicGetProduct
+    handlePublicListProducts, handlePublicGetProduct, handlePublicGetDeliveryFee
 } from "./public.js";
 import {
     handleCreateProduct, handleListProducts, handleGetProduct,
@@ -271,6 +271,7 @@ export default {
             // ---- مسارات التصفح العامة (بدون تسجيل دخول) ----
             const publicVendorIdMatch = pathname.match(/^\/api\/public\/vendors\/([^/]+)$/);
             const publicVendorProductsMatch = pathname.match(/^\/api\/public\/vendors\/([^/]+)\/products$/);
+            const publicVendorDeliveryFeeMatch = pathname.match(/^\/api\/public\/vendors\/([^/]+)\/delivery-fee$/);
             const publicProductIdMatch = pathname.match(/^\/api\/public\/products\/(\d+)$/);
 
             if (pathname === "/api/public/vendors" && request.method === "GET") {
@@ -281,6 +282,9 @@ export default {
             }
             if (publicVendorProductsMatch && request.method === "GET") {
                 return withCORS(await handlePublicListVendorProducts(request, env, decodeURIComponent(publicVendorProductsMatch[1])));
+            }
+            if (publicVendorDeliveryFeeMatch && request.method === "GET") {
+                return withCORS(await handlePublicGetDeliveryFee(request, env, decodeURIComponent(publicVendorDeliveryFeeMatch[1])));
             }
             if (pathname === "/api/public/products" && request.method === "GET") {
                 return withCORS(await handlePublicListProducts(request, env));
