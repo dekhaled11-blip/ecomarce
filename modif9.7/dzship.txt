@@ -1,0 +1,262 @@
+﻿dzship
+BY DZBUILD
+Quickstart
+Stop desks
+Endpoints
+Couriers
+Statuses
+Errors
+GitHub
+
+FREE API · ALGERIA · NO SIGNUP · NO KEY
+Ship with every Algerian courier through one API
+Create cash-on-delivery parcels, track them, quote fees and list stop desks with Yalidine, ZR Express, Maystro, NOEST, Zimou and every courier on Ecotrack: 99 in all. One request shape, one status vocabulary, all 58 wilayas.
+
+Create a parcel →
+Courier guides →
+261,724 requests served
+POST /v1/orders
+POST /v1/track
+POST /v1/rates
+POST /v1/desks
+create-order.sh
+copy
+$ curl -X POST https://freeship.dzbuild.com/v1/orders \
+  -H 'Content-Type: application/json' -d '{
+    "courier":     "yalidine",
+    "credentials": { "apiId": "…", "apiToken": "…" },
+    "options":     { "fromWilaya": 16 },
+    "order": {
+      "recipient": {
+        "fullName":    "Amine Bouzid",
+        "phone":       "0551234567",
+        "wilayaCode":  16,
+        "communeName": "Bab Ezzouar"
+      },
+      "deliveryType": "home",
+      "productList":  "Sneakers Air x1",
+      "codAmount":    4500
+    }
+  }'
+
+→ 201 { "trackingNumber": "yal-ABC123", "status": "created" }
+On this page
+How it works
+Endpoints
+Create a parcel
+Track a parcel
+Statuses
+Rates
+Stop desks
+Couriers
+Wilayas
+Errors
+Fair use
+FAQ
+Try it before you have an account
+Every courier needs a merchant contract before it will take a single request. "courier": "sandbox" needs nothing at all: it checks the phone, the wilaya, the commune and every field limit exactly as a real courier does, then answers like one, and creates no parcel.
+
+Same call, one word changed. When your Yalidine (or DHD, or Maystro) credentials arrive, swap sandbox for the courier key and add credentials. Nothing else moves.
+How it works
+Every request carries three things: which courier to use, your own credentials for that courier, and the order itself. The parcel is created on your courier account; credentials are used for that one call and never stored. Switching courier is a one-line change: the request shape and the response shape stay the same.
+
+Who is this for? Anyone building for Algeria: a store, a landing page, an ERP, a Google Sheet with 200 orders. It exists because every Algerian courier has a different API and most of them are undocumented. We integrated them once, properly, at DZBuild. This is that work as a free service.
+Endpoints
+Base URL https://freeship.dzbuild.com · all bodies JSON.
+
+POST
+/v1/orders
+Create a shipment with any supported courier
+POST
+/v1/track
+Current status + full event history for a tracking number
+POST
+/v1/rates
+Delivery + return fee for a route
+POST
+/v1/desks
+The stop desks a courier runs in one wilaya, for the customer to choose from
+GET
+/v1/couriers
+Every supported courier by name, with credentials and capabilities
+GET
+/v1/wilayas
+The 58 wilayas couriers deliver to. Add ?16, ?q=oran or ?all=1
+GET
+/v1/communes
+All 1 541 communes. Add ?16 for one wilaya, ?q=bab to search
+GET
+/openapi.json
+The whole contract, machine-readable, plus /llms.txt for agents
+GET
+/health
+Liveness
+Create a parcel
+The hero example above is complete and real: run it with your Yalidine credentials and a parcel lands on your account, label included. The fields that matter:
+
+Field		Notes
+courier	REQUIRED	Any key from GET /v1/couriers: yalidine · zrexpress · maystro · noest · dhd…
+credentials	REQUIRED	Your courier account's API credentials, see couriers
+order.recipient.fullName	REQUIRED	2–120 chars
+order.recipient.phone	REQUIRED	Valid Algerian mobile (05/06/07…), else 422 invalid_phone
+order.recipient.wilayaCode	REQUIRED	1–58, see GET /v1/wilayas
+order.recipient.communeName	REQUIRED	The courier's exact French spelling. Wrong commune = the #1 create error
+order.deliveryType	REQUIRED	home or stopdesk; for a desk, pick one with POST /v1/desks
+order.productList	REQUIRED	Printed on the label; long lists truncated safely per courier
+order.codAmount	REQUIRED	Cash to collect, integer DZD. 0 = prepaid
+options.fromWilaya	YALIDINE	Your origin wilaya, required to create and to quote
+order.reference	OPTIONAL	Your order id; omitted → generated (FS-…)
+All optional fields
+Track a parcel
+On demand: call it on page load, from a cron, wherever. rawStatus always carries the courier's original wording.
+
+track.sh
+copy
+$ curl -X POST https://freeship.dzbuild.com/v1/track \
+  -H 'Content-Type: application/json' -d '{
+    "courier": "yalidine",
+    "credentials": { "apiId": "…", "apiToken": "…" },
+    "trackingNumber": "yal-ABC123"
+  }'
+
+→ 200 {
+  "status": "out_for_delivery",
+  "events": [
+    { "status": "picked_up",        "rawStatus": "Ramassé",            "timestamp": "2026-07-08T09:00:00Z" },
+    { "status": "out_for_delivery", "rawStatus": "Sorti en livraison", "timestamp": "2026-07-09T08:30:00Z" }
+  ]
+}
+One status vocabulary
+Every courier's dialect (French sentences, Arabic labels, bare numbers) maps onto one closed set. Build your UI against it once.
+
+created
+→
+pending_pickup
+→
+picked_up
+→
+in_transit
+→
+at_hub
+→
+out_for_delivery
+→
+delivered
+side states: delivery_attemptedon_holdreturn_in_transitreturnedcancelledlostunknown
+delivered, returned, cancelled, lost are terminal. unknown means the courier emitted new wording: show rawStatus and keep polling. French + Arabic UI labels for all fourteen are in the status guide.
+
+Quote a fee
+rates.sh
+copy
+$ curl -X POST https://freeship.dzbuild.com/v1/rates \
+  -H 'Content-Type: application/json' -d '{
+    "courier": "yalidine",
+    "credentials": { "apiId": "…", "apiToken": "…" },
+    "query": { "fromWilaya": 16, "toWilaya": 31, "deliveryType": "home" }
+  }'
+
+→ 200 { "deliveryFee": 600, "returnFee": 250, "total": 600, "currency": "DZD" }
+Note the returnFee: your COD unit economics depend on it as much as on the delivery fee. query.toCommune refines per-commune pricing; query.tier accepts express (default) or economic. Deep-south wilayas (isDeepSouth in /v1/wilayas) carry surcharges everywhere, so quote rather than hardcode.
+
+Stop desks
+Let the customer choose where to collect the parcel. POST /v1/desks takes the same courier and credentials as an order, plus the wilaya, and returns the desks you can offer. Try it as written: the sandbox answers with no account.
+
+desks.sh
+copy
+$ curl -X POST https://freeship.dzbuild.com/v1/desks \
+  -H 'Content-Type: application/json' -d '{
+    "courier": "sandbox",
+    "wilayaCode": 31
+  }'
+
+→ 200 [ { "id": "SBX-31", "name": "Sandbox desk Oran", "wilayaCode": 31,
+          "communeName": "Oran", "address": "Sandbox address, Oran" } ]
+To ship to the chosen desk, send deliveryType: "stopdesk", the desk's id as order.stopDeskId and, when the desk has one, its communeName as recipient.communeName. That one rule works for every courier:
+
+Courier	What routes the parcel to the desk
+Yalidine family, NOEST, ZR Express (new), Zimou, Ecom Delivery, MDM, Near Delivery	The desk id. Yalidine also wants the desk's commune
+Every Ecotrack courier, Maystro, Elogistia	The commune. Their APIs take no desk id, so the parcel goes to the desk of recipient.communeName
+ZR Express (Procolis), Colivraison	No desk list over their API: 422 NOT_SUPPORTED
+Desk lists change a few times a year. Cache the answer per courier and wilaya for a day instead of asking on every checkout.
+Couriers
+Ninety-nine couriers, one request shape. Credentials come from your own account on each courier's dashboard. GET /v1/couriers returns the live list with capabilities; ?q=rocket finds yours.
+
+Courier	courier	credentials	Notes
+Yalidine	yalidine	apiId, apiToken	options.fromWilaya required. Labels at creation. Densest stop-desk network
+Yalitec · Guepex · Easy & Speed · Economiqua · We Can	yalitec guepex easyandspeed economiqua wecan	apiId, apiToken	Same API as Yalidine on their own domain. Just name yours
+ZR Express (Procolis)	zrexpress	token, key	Exchanges supported. Labels from the dashboard. abexexpress, leopardexpress, colilog, flashdelivery resolve here too
+Maystro	maystro	apiKey	Commune IDs resolved for you. Same name+phone twice a day is rejected by Maystro
+NOEST	noest	apiToken, guid	Order validation handled: created means pickup-ready. Desk codes like 16A, from /v1/desks
+82 couriers on Ecotrack: DHD, Conexlog, MSM Go, Rocket, World Express, Anderson…	dhd conexlog msmgo rocketdelivery … one key each	token	Your courier's own key. No URL to look up: GET /v1/couriers?platform=ecotrack lists all 82
+ZR Express (new platform)	zrexpressnew	apiKey, tenantId	The zrexpress.app platform, not procolis.com. Addresses are territory UUIDs, resolved for you
+Zimou Express	zimou	token	One Sanctum token, sent whole. Its own commune spellings, matched exactly
+Colivraison	colivraison	publicKey, token	Bulk-shaped API; single orders wrapped for you
+Ecom Delivery	ecomdelivery	apiKey, apiToken	v2 host. Create takes a bare JSON array
+Elogistia	elogistia	apiKey	Authenticates by query parameter, never logged and never echoed back
+Near Delivery	neardelivery	apiKey, apiSecret	Relay points only: send stopdesk with a point from /v1/desks
+MDM Express	mdm	apiKey	Resolves its own country/state/city ids for you
+An Ecotrack tenant we don't list yet	ecotrack	token	options.baseUrl = your tenant, e.g. https://yourname.ecotrack.dz
+No account yet?	sandbox	none	Validates exactly what a real courier validates, and creates nothing
+Choosing between them, per-courier behavior, COD mechanics: the dzship field guides cover what the comparison tables don't.
+
+58 wilayas, 69 wilayas
+Algeria became 69 wilayas in April 2026 (loi n° 26-06; codes 59–69 fixed by décret n° 26-206). No courier accepts a code above 58 yet. The parent wilayas keep running the new territory until the handover completes, and a parcel addressed to 60 is rejected.
+
+So GET /v1/wilayas answers with the 58 you can actually ship to. Ask for the rest explicitly, and each one tells you what to ship it as:
+
+Call	Answer
+GET /v1/wilayas	The 58 couriers deliver to
+GET /v1/wilayas?all=1	All 69, each with courierSupported and shipAs
+GET /v1/wilayas?60	Barika: courierSupported: false, shipAs: 5 (Batna)
+GET /v1/communes?60	The 8 communes moved to Barika, in the spelling couriers expect
+GET /v1/wilayas?q=alger	Name search, French or Arabic, accents optional
+Show the new name in your address form if you like, but send shipAs to the courier. That is the whole trick, and it is why the two lists are separate.
+Errors
+One envelope everywhere: { "error": { "code", "message", "fields?" } }
+
+HTTP	Code	What to do
+400	VALIDATION_ERROR	Fix the fields listed in error.fields
+422	invalid_phone	Not a valid Algerian mobile: correct the number
+422 / 502	NOT_SUPPORTED / COURIER_ERROR	The courier rejected it: read message (bad credentials, unknown commune, missing stop desk…)
+400	EGRESS_BLOCKED	options.baseUrl is not one of that courier's own addresses. Check the host, or use the courier's own key
+429	rate_limited	Wait Retry-After seconds, then retry
+503	overloaded	Momentary capacity protection, retry shortly
+Fair use
+Hard server-side limits keep the API fast and free for everyone.
+
+Limit	Value
+Orders / hour / IP	200
+Orders / day / IP	1 000
+Orders / day / recipient phone	10
+Tracking calls / minute / IP	60
+Tracking calls / day / IP	5 000
+Rate quotes / minute / IP	60
+Desk lists / minute / IP	60
+Design around them: track on page-view rather than tight loops. The reference endpoints (/v1/wilayas, /v1/communes, /v1/couriers) are cacheable and cost you nothing. They ship a Cache-Control header, so cache them and stop asking.
+
+Questions
+Is dzship free?
+Yes. There is no signup, no API key and no per-parcel fee. Your courier bills you exactly as it does today; dzship only asks you to stay inside the fair-use limits.
+
+Do you store my courier credentials?
+No. They travel with each request, are used for that one call to your courier and are never written anywhere. The parcel is created on your own courier account.
+
+Which couriers does it support?
+99: Yalidine and its sister networks, ZR Express on both platforms, Maystro, NOEST, Zimou, Colivraison, Ecom Delivery, Elogistia, Near Delivery, MDM and every courier that runs on Ecotrack (DHD, Conexlog, MSM Go, World Express and 78 more). GET /v1/couriers returns the live list.
+
+How do I let the customer pick a stop desk?
+Call POST /v1/desks with the courier, your credentials and the wilaya, show the desks it returns, then create the order with deliveryType: "stopdesk", the chosen desk's id as stopDeskId and its communeName as recipient.communeName.
+
+Can I call the API from the browser?
+Call it from your server. Your courier credentials would be readable by anyone who opens the page otherwise.
+
+I sell online and do not want to write code. What should I use?
+A DZBuild store. The same couriers are already built in, along with order confirmation, stock and a dashboard in Arabic and French.
+
+BUILDING A WHOLE STORE?
+dzship is the shipping. DZBuild is the rest.
+Arabic and French storefronts, landing pages, COD order management with confirmation workflows, every courier on this page already wired in, stock, analytics, and a dashboard your client can actually use.
+
+Open a DZBuild store →
+© DZBuild. dzship is a free service by dzbuild.com
+Gi

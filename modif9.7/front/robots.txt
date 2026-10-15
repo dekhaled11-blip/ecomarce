@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin-login.html
+Disallow: /admin-vendors.html
+Disallow: /admin-vendor-detail.html
+Disallow: /admin-activation-queue.html
