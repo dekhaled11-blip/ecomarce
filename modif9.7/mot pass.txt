@@ -1,9 +1,0 @@
-jwt;
-f1ed8bb59cb20299a531537f1995010874ce9daf12f42085d31465843c3ea09e
-
-admin;
-f7101924f357db6f512b392f3725ab9a
-
-
-
-export CLOUDFLARE_API_TOKEN=cfut_jUfcGmkqFEYzKvvN8d5O5IgqcwAHfqm6gjNh15in5d39c0ac
